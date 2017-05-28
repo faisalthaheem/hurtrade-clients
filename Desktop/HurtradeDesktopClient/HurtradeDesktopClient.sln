@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HurtradeDesktopClient", "HurtradeDesktopClient\HurtradeDesktopClient.csproj", "{54EC7B2F-031E-4CBB-9664-B13BE5B5F998}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedData", "SharedData\SharedData.csproj", "{E6890D85-BBE2-45D2-B9B5-CCA16AB65A23}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54EC7B2F-031E-4CBB-9664-B13BE5B5F998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54EC7B2F-031E-4CBB-9664-B13BE5B5F998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54EC7B2F-031E-4CBB-9664-B13BE5B5F998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54EC7B2F-031E-4CBB-9664-B13BE5B5F998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6890D85-BBE2-45D2-B9B5-CCA16AB65A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6890D85-BBE2-45D2-B9B5-CCA16AB65A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6890D85-BBE2-45D2-B9B5-CCA16AB65A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6890D85-BBE2-45D2-B9B5-CCA16AB65A23}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
