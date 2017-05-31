@@ -1,9 +1,14 @@
-﻿<Controls:MetroWindow x:Class="HurtradeDesktopClient.MainWindow"
+﻿<Controls:MetroWindow x:Class="HurtradeDesktopClient.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:intr="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:prism="http://prismlibrary.com/"            
+        xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+        Dialog:DialogParticipation.Register="{Binding}"              
+        
         mc:Ignorable="d"
         Title="Hur Trade" Height="350" Width="852.755"
         BorderThickness="0" 
@@ -12,8 +17,13 @@
 
         WindowTransitionsEnabled="False"
         WindowStartupLocation="CenterScreen"
-        Loaded="MetroWindow_Loaded"
     >
+    <intr:Interaction.Triggers>
+        <intr:EventTrigger EventName="Loaded">
+            <intr:InvokeCommandAction Command="{Binding WindowLoaded}"/>
+        </intr:EventTrigger>
+    </intr:Interaction.Triggers>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -31,7 +41,7 @@
             Grid.Column="0"
             >
             <Button
-                Content="abc" Click="Button_Click"
+                Content="abc"
                 ></Button>
         </StackPanel>
 
@@ -45,12 +55,15 @@
                 Margin = "10,10,0,0" 
                 VerticalAlignment = "Top" 
                 Width = "280" 
-                ItemsSource="{Binding Symbols}"
+                Name="QuoteList"
+                SelectionMode="Single"
+                IsSynchronizedWithCurrentItem="True"
+                ItemsSource="{Binding QuoteCollectionView}"
             >
 
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Symbol}" 
+                        <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Name}" 
                   Width = "100"/>
 
                         <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
@@ -61,6 +74,13 @@
 
                     </GridView>
                 </ListView.View>
+
+
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Buy" Command="{Binding TradeBuyCommand}"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
 
             </ListView>
         </StackPanel>
