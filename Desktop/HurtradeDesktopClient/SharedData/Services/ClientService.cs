@@ -9,7 +9,7 @@ using System.Text;
 using SharedData.poco.trade;
 using SharedData.poco.updates;
 
-namespace HurtradeDesktopClient.Services
+namespace SharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
 
@@ -71,10 +71,10 @@ namespace HurtradeDesktopClient.Services
                 this.responseQueueName = responseQueue;
                 _username = username;
                 _password = password;
-
+                
                 _channel = new ConnectionFactory() {
                     AutomaticRecoveryEnabled = true,
-                    HostName = Properties.Settings.Default.brokerip,
+                    HostName = System.Configuration.ConfigurationManager.AppSettings["brokerip"],
                     UserName = username,
                     Password = password
                 }.CreateConnection().CreateModel();

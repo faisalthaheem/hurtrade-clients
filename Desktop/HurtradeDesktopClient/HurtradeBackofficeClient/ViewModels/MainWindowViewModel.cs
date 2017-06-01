@@ -1,4 +1,4 @@
-﻿using HurtradeDesktopClient.Views;
+﻿using HurtradeBackofficeClient.Views;
 using MahApps.Metro.Controls.Dialogs;
 using MahApps.Metro.SimpleChildWindow;
 using Prism.Commands;
@@ -15,7 +15,7 @@ using MahApps.Metro.SimpleChildWindow.Utils;
 using SharedData.poco.positions;
 using SharedData.Services;
 
-namespace HurtradeDesktopClient.ViewModels
+namespace HurtradeBackofficeClient.ViewModels
 {
     public class MainWindowViewModel : BindableBase
     {
@@ -194,16 +194,7 @@ namespace HurtradeDesktopClient.ViewModels
         
         private async void ExecuteTradeCommand(bool isBuy)
         {
-            TradeOrderWindow tow = new TradeOrderWindow();
-            TradeOrderWindowViewModel towContext = tow.DataContext as TradeOrderWindowViewModel;
-            towContext.View = tow;
-            towContext.OnTradeExecuted += TowContext_OnTradeExecuted;
-
-
-            towContext.IsBuy = isBuy;
-            towContext.TradingSymbol = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
-
-            await ChildWindowManager.ShowChildWindowAsync(_mainWindow, tow, ChildWindowManager.OverlayFillBehavior.FullWindow);
+            //await ChildWindowManager.ShowChildWindowAsync(_mainWindow, tow, ChildWindowManager.OverlayFillBehavior.FullWindow);
         }
 
         private void ExecuteTradeSellCommand()
@@ -215,38 +206,6 @@ namespace HurtradeDesktopClient.ViewModels
             ExecuteTradeCommand(true);
         }
 
-        private void TowContext_OnTradeExecuted(TradeOrderWindowViewModel context)
-        {
-            context.View.Close();
-
-            decimal requestedPrice = 0;
-            Quote searchKey = new Quote() { Name = context.TradingSymbol };
-            lock (lockQuotes)
-            {
-                int quoteIndex = Quotes.IndexOf(searchKey);
-
-                if (context.IsBuy)
-                {
-                    requestedPrice = Quotes[quoteIndex].Ask;
-                }
-                else
-                {
-                    requestedPrice = Quotes[quoteIndex].Bid;
-                }
-            }
-
-            TradeRequest request = new TradeRequest()
-            {
-                commodity = context.TradingSymbol,
-                requestedLot = decimal.Parse(context.LotSize),
-                requestTime = DateTime.Now.ToString("MM/dd/yyyy HH:mm"),
-                requestType = context.IsBuy ? TradeRequest.REQUEST_TYPE_BUY : TradeRequest.REQUEST_TYPE_SELL,
-                tradeId = Guid.NewGuid(),
-                requestedPrice = requestedPrice
-            };
-
-            ClientService.GetInstance().requestTrade(request);
-            
-        }
+        
     }
 }

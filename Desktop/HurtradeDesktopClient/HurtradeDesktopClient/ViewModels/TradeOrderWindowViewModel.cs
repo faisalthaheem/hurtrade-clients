@@ -1,5 +1,4 @@
-﻿using HurtradeDesktopClient.Services;
-using HurtradeDesktopClient.Views;
+﻿using HurtradeDesktopClient.Views;
 using MahApps.Metro.Controls.Dialogs;
 using MahApps.Metro.SimpleChildWindow;
 using Prism.Commands;
@@ -12,6 +11,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using MahApps.Metro.Controls;
 using MahApps.Metro.SimpleChildWindow.Utils;
+using SharedData.Services;
 
 namespace HurtradeDesktopClient.ViewModels
 {

@@ -7,7 +7,7 @@ using SharedData.poco;
 using SharedData.events;
 using System.Text;
 
-namespace HurtradeDesktopClient.Services
+namespace SharedData.Services
 {
     public delegate void GenericResponseReceivedEventHandler(object sender, GenericResponseEventArgs e);
 
@@ -62,19 +62,22 @@ namespace HurtradeDesktopClient.Services
             {
                 _channel = new ConnectionFactory() {
                     AutomaticRecoveryEnabled = true,
-                    HostName = Properties.Settings.Default.brokerip,
+                    HostName = System.Configuration.ConfigurationManager.AppSettings["brokerip"],
                     UserName = username,
                     Password = password
                 }.CreateConnection().CreateModel();
 
                 #region setup
-                _channel.ExchangeDeclare(Properties.Settings.Default.exchangeNameAuth, ExchangeType.Direct, true, false, null);
+                _channel.ExchangeDeclare(
+                    System.Configuration.ConfigurationManager.AppSettings["exchangeNameAuth"], 
+                    ExchangeType.Direct, true, false, null);
 
 
                 //create a temporary queue to receive the response on
                 var qResponse = _channel.QueueDeclare("", false, true, true, null);
                 responseQueueName = qResponse.QueueName;
-                _channel.QueueBind(responseQueueName, Properties.Settings.Default.exchangeNameAuth, username);
+                _channel.QueueBind(responseQueueName,
+                    System.Configuration.ConfigurationManager.AppSettings["exchangeNameAuth"], username);
 
                 var qResponseMsgConsumer = new EventingBasicConsumer(_channel);
                 qResponseMsgConsumer.Received += qResponseMsgConsumer_Received;
@@ -114,7 +117,7 @@ namespace HurtradeDesktopClient.Services
                     props.UserId = _username;
 
                     _channel.BasicPublish(
-                        Properties.Settings.Default.exchangeNameAuth, 
+                        System.Configuration.ConfigurationManager.AppSettings["exchangeNameAuth"],
                         "", 
                         props, 
                         UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dic))

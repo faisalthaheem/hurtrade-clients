@@ -1,0 +1,133 @@
+﻿<Controls:MetroWindow x:Class="HurtradeBackofficeClient.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:intr="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+        Dialog:DialogParticipation.Register="{Binding}"              
+        
+        mc:Ignorable="d"
+        Title="Hur Trade" Height="350" Width="852.755"
+        BorderThickness="0" 
+        GlowBrush="Black"
+        ResizeMode="CanResizeWithGrip"
+
+        WindowTransitionsEnabled="False"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+    >
+    <intr:Interaction.Triggers>
+        <intr:EventTrigger EventName="Loaded">
+            <intr:InvokeCommandAction Command="{Binding WindowLoaded}"/>
+        </intr:EventTrigger>
+        <intr:EventTrigger EventName="Closing">
+            <intr:InvokeCommandAction Command="{Binding WindowClosing}"/>
+        </intr:EventTrigger>
+    </intr:Interaction.Triggers>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition
+                Width="320px"
+                />
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel
+            Grid.Row="0"
+            Grid.Column="0"
+            >
+            <Button
+                Content="abc"
+                ></Button>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Column="0"
+            Grid.Row="1"
+            >
+            <ListView 
+                HorizontalAlignment = "Left" 
+                Height = "auto" 
+                Margin = "10,10,0,0" 
+                VerticalAlignment = "Top" 
+                Width = "320" 
+                Name="QuoteList"
+                SelectionMode="Single"
+                IsSynchronizedWithCurrentItem="True"
+                ItemsSource="{Binding QuoteCollectionView}"
+            >
+
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Name}" 
+                  Width = "100"/>
+
+                        <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
+                  Width = "100"/>
+
+                        <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
+                  Width = "100"/>
+
+                    </GridView>
+                </ListView.View>
+
+
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Buy" Command="{Binding TradeBuyCommand}"/>
+                        <MenuItem Header="Sell" Command="{Binding TradeSellCommand}"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+
+            </ListView>
+        </StackPanel>
+
+        <StackPanel
+            Grid.Column="1"
+            Grid.Row="0"
+            >
+            <TabControl>
+                <TabItem Header="Trades">
+                    <StackPanel
+            Grid.Column="0"
+            Grid.Row="1"
+            >
+                        <ListView 
+                            HorizontalAlignment = "Left" 
+                            Height = "auto" 
+                            Margin = "10,10,0,0" 
+                            VerticalAlignment = "Top" 
+                            Width = "auto" 
+                            ItemsSource="{Binding TradesCollectionView}"
+            >
+
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
+                                    <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
+                                    <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
+                                    <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "50"/>
+                                    <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
+                                    <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
+                                </GridView>
+                            </ListView.View>
+
+                        </ListView>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="Orders">
+
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+
+    </Grid>
+</Controls:MetroWindow>

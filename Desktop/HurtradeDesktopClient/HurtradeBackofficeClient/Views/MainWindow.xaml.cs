@@ -1,7 +1,7 @@
 ﻿using MahApps.Metro.Controls.Dialogs;
-using HurtradeDesktopClient.ViewModels;
+using HurtradeBackofficeClient.ViewModels;
 
-namespace HurtradeDesktopClient.Views
+namespace HurtradeBackofficeClient.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
