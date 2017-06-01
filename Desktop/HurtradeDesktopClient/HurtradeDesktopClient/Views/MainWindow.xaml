@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:intr="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-        xmlns:prism="http://prismlibrary.com/"            
+        xmlns:prism="http://prismlibrary.com/"
         xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
         Dialog:DialogParticipation.Register="{Binding}"              
         
@@ -17,10 +17,14 @@
 
         WindowTransitionsEnabled="False"
         WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
     >
     <intr:Interaction.Triggers>
         <intr:EventTrigger EventName="Loaded">
             <intr:InvokeCommandAction Command="{Binding WindowLoaded}"/>
+        </intr:EventTrigger>
+        <intr:EventTrigger EventName="Closing">
+            <intr:InvokeCommandAction Command="{Binding WindowClosing}"/>
         </intr:EventTrigger>
     </intr:Interaction.Triggers>
 
@@ -31,7 +35,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition
-                Width="300px"
+                Width="320px"
                 />
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -54,7 +58,7 @@
                 Height = "auto" 
                 Margin = "10,10,0,0" 
                 VerticalAlignment = "Top" 
-                Width = "280" 
+                Width = "320" 
                 Name="QuoteList"
                 SelectionMode="Single"
                 IsSynchronizedWithCurrentItem="True"
@@ -79,6 +83,7 @@
                 <ListView.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Buy" Command="{Binding TradeBuyCommand}"/>
+                        <MenuItem Header="Sell" Command="{Binding TradeSellCommand}"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
 
@@ -101,7 +106,7 @@
                             Margin = "10,10,0,0" 
                             VerticalAlignment = "Top" 
                             Width = "auto" 
-                            ItemsSource="{Binding Trades}"
+                            ItemsSource="{Binding TradesCollectionView}"
             >
 
                             <ListView.View>

@@ -9,7 +9,7 @@ namespace SharedData.poco.updates
 {
     public class ClientUpdateEventArgs : EventArgs
     {
-        public Dictionary<Guid, position> Positions;
+        public Dictionary<Guid, Position> Positions;
         public QuoteList ClientQuotes;
     }
 }

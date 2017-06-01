@@ -49,6 +49,8 @@
     <Compile Include="poco\positions\position.cs" />
     <Compile Include="poco\Quote.cs" />
     <Compile Include="poco\QuoteList.cs" />
+    <Compile Include="poco\trade\TradeRequest.cs" />
+    <Compile Include="poco\trade\TradeResponse.cs" />
     <Compile Include="poco\updates\ClientUpdate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

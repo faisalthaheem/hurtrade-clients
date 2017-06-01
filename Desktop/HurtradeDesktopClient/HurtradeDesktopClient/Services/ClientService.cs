@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using SharedData.poco;
 using SharedData.events;
 using System.Text;
+using SharedData.poco.trade;
 using SharedData.poco.updates;
 
 namespace HurtradeDesktopClient.Services
@@ -107,7 +108,9 @@ namespace HurtradeDesktopClient.Services
                 _channel.BasicAck(e.DeliveryTag, false);
 
                 ClientUpdateEventArgs update = JsonConvert.DeserializeObject<ClientUpdateEventArgs>(ASCIIEncoding.UTF8.GetString(body));
-                
+
+                Console.WriteLine(ASCIIEncoding.UTF8.GetString(body));
+
                 Task.Factory.StartNew(() =>
                 {
                     RaiseOnUpdateReceived(update);
@@ -117,6 +120,19 @@ namespace HurtradeDesktopClient.Services
             {
                 log.Error(ex);
             }
+        }
+
+        public void requestTrade(TradeRequest request)
+        {
+            IBasicProperties props = _channel.CreateBasicProperties();
+            props.UserId = _username;
+
+            _channel.BasicPublish(
+                        clientExchangeName,
+                        "request",
+                        props,
+                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
+                    );
         }
         
     }

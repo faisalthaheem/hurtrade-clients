@@ -1,13 +1,19 @@
 ﻿using HurtradeDesktopClient.Services;
+using HurtradeDesktopClient.Views;
 using MahApps.Metro.Controls.Dialogs;
+using MahApps.Metro.SimpleChildWindow;
 using Prism.Commands;
 using Prism.Mvvm;
 using SharedData.poco;
+using SharedData.poco.trade;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
+using MahApps.Metro.Controls;
+using MahApps.Metro.SimpleChildWindow.Utils;
+using SharedData.poco.positions;
 
 namespace HurtradeDesktopClient.ViewModels
 {
@@ -15,12 +21,17 @@ namespace HurtradeDesktopClient.ViewModels
     {
         #region Commands
         public DelegateCommand TradeBuyCommand { get; private set; }
+        public DelegateCommand TradeSellCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
+        public DelegateCommand WindowClosing { get; private set; }
         #endregion
 
         #region Properties
         public ObservableCollection<Quote> Quotes = new ObservableCollection<Quote>();
         public ListCollectionView QuoteCollectionView { get; private set; }
+
+        public ObservableCollection<SharedData.poco.positions.Position> Trades = new ObservableCollection<SharedData.poco.positions.Position>();
+        public ListCollectionView TradesCollectionView { get; private set; }
         #endregion
 
 
@@ -31,18 +42,26 @@ namespace HurtradeDesktopClient.ViewModels
         private string responseQueueName = string.Empty;
         private string username = string.Empty;
         private string password = string.Empty;
-        private Object lockQuotes = new Object();
+        
+        private MetroWindow _mainWindow;
         private IDialogCoordinator _dialogCoord;
 
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
             (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #endregion
 
+        #region locks
+        private Object lockQuotes = new Object();
+        private Object lockTrades = new Object();
+        #endregion
 
-        public MainWindowViewModel(IDialogCoordinator dialogCoordinator)
+
+        public MainWindowViewModel(MetroWindow mainWindow,IDialogCoordinator dialogCoordinator)
         {
+            TradesCollectionView = new ListCollectionView(Trades);
             QuoteCollectionView = new ListCollectionView(Quotes);
-            _dialogCoord = dialogCoordinator;
+            _mainWindow = mainWindow;
+           _dialogCoord = dialogCoordinator;
 
             SetupCommands();
         }
@@ -50,12 +69,19 @@ namespace HurtradeDesktopClient.ViewModels
         private void SetupCommands()
         {
             TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
-            WindowLoaded = new DelegateCommand(Window_Loaded);
+            TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
+            WindowClosing = new DelegateCommand(ExecuteWindowClosing);
         }
 
-        private async void Window_Loaded()
+        private void ExecuteWindowClosing()
         {
-            ClientService.GetInstance().OnUpdateReceived += MainWindow_OnUpdateReceived; ;
+            ClientService.GetInstance().OnUpdateReceived -= OnUpdateReceived;
+        }
+
+        private async void ExecuteWindowLoaded()
+        {
+            ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived; ;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -91,7 +117,7 @@ namespace HurtradeDesktopClient.ViewModels
 
         }
 
-        private void MainWindow_OnUpdateReceived(object sender, SharedData.poco.updates.ClientUpdateEventArgs e)
+        private void OnUpdateReceived(object sender, SharedData.poco.updates.ClientUpdateEventArgs e)
         {
 
             App.Current.Dispatcher.Invoke((Action)delegate
@@ -121,6 +147,28 @@ namespace HurtradeDesktopClient.ViewModels
                     QuoteCollectionView.MoveCurrentToPosition(currentIndex);
                     QuoteCollectionView.Refresh();
                 }
+
+                lock(lockTrades)
+                {
+                    int currentIndex = TradesCollectionView.CurrentPosition;
+
+                    int idx = -1;
+                    foreach(var t in e.Positions.Values)
+                    {
+                        idx = Trades.IndexOf(t);
+                        if(idx >= 0)
+                        {
+                            Trades[idx] = t;
+                        }
+                        else
+                        {
+                            Trades.Add(t);
+                        }
+                    }
+
+                    TradesCollectionView.MoveCurrentToPosition(currentIndex);
+                    TradesCollectionView.Refresh();
+                }
             });
         }
 
@@ -143,21 +191,62 @@ namespace HurtradeDesktopClient.ViewModels
                       AuthService.Cleanup();
                   });
         }
-
-        private Window findParentWindow(DependencyObject o)
+        
+        private async void ExecuteTradeCommand(bool isBuy)
         {
-            var parent = VisualTreeHelper.GetParent(o);
-            while (!(parent is Window))
-            {
-                parent = VisualTreeHelper.GetParent(parent);
-            }
-            return parent as Window;
+            TradeOrderWindow tow = new TradeOrderWindow();
+            TradeOrderWindowViewModel towContext = tow.DataContext as TradeOrderWindowViewModel;
+            towContext.View = tow;
+            towContext.OnTradeExecuted += TowContext_OnTradeExecuted;
+
+
+            towContext.IsBuy = isBuy;
+            towContext.TradingSymbol = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
+
+            await ChildWindowManager.ShowChildWindowAsync(_mainWindow, tow, ChildWindowManager.OverlayFillBehavior.FullWindow);
         }
 
+        private void ExecuteTradeSellCommand()
+        {
+            ExecuteTradeCommand(false);
+        }
         private void ExecuteTradeBuyCommand()
         {
-
+            ExecuteTradeCommand(true);
         }
 
+        private void TowContext_OnTradeExecuted(TradeOrderWindowViewModel context)
+        {
+            context.View.Close();
+
+            decimal requestedPrice = 0;
+            Quote searchKey = new Quote() { Name = context.TradingSymbol };
+            lock (lockQuotes)
+            {
+                int quoteIndex = Quotes.IndexOf(searchKey);
+
+                if (context.IsBuy)
+                {
+                    requestedPrice = Quotes[quoteIndex].Ask;
+                }
+                else
+                {
+                    requestedPrice = Quotes[quoteIndex].Bid;
+                }
+            }
+
+            TradeRequest request = new TradeRequest()
+            {
+                commodity = context.TradingSymbol,
+                requestedLot = decimal.Parse(context.LotSize),
+                requestTime = DateTime.Now.ToString("MM/dd/yyyy HH:mm"),
+                requestType = context.IsBuy ? TradeRequest.REQUEST_TYPE_BUY : TradeRequest.REQUEST_TYPE_SELL,
+                tradeId = Guid.NewGuid(),
+                requestedPrice = requestedPrice
+            };
+
+            ClientService.GetInstance().requestTrade(request);
+            
+        }
     }
 }

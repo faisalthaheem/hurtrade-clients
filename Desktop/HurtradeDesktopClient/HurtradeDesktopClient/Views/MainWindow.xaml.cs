@@ -18,11 +18,12 @@ namespace HurtradeDesktopClient.Views
     /// </summary>
     public partial class MainWindow
     {
-        MainWindowViewModel mvvm = new MainWindowViewModel(DialogCoordinator.Instance);
+        MainWindowViewModel mvvm = null;
 
         public MainWindow()
         {
             InitializeComponent();
+            mvvm = new MainWindowViewModel(this, DialogCoordinator.Instance);
             DataContext = mvvm;
         }
     }
