@@ -37,7 +37,6 @@ namespace HurtradeDesktopClient.ViewModels
 
         #region Private Members
         ProgressDialogController progressController;
-        private string officeExchangeName = string.Empty;
         private string clientExchangeName = string.Empty;
         private string responseQueueName = string.Empty;
         private string username = string.Empty;
@@ -174,10 +173,10 @@ namespace HurtradeDesktopClient.ViewModels
 
         private void MainWindow_OnGenericResponseReceived(object sender, SharedData.events.GenericResponseEventArgs e)
         {
-            officeExchangeName = e.GenericResponse["officeExchangeName"];
+            
             clientExchangeName = e.GenericResponse["clientExchangeName"];
             responseQueueName = e.GenericResponse["responseQueueName"];
-            ClientService.GetInstance().init(username, password, officeExchangeName, clientExchangeName, responseQueueName);
+            ClientService.GetInstance().init(username, password, clientExchangeName, responseQueueName);
 
             System.Windows.Threading.
                   Dispatcher.CurrentDispatcher.Invoke(async () => {

@@ -106,6 +106,8 @@
                             Margin = "10,10,0,0" 
                             VerticalAlignment = "Top" 
                             Width = "auto" 
+                            SelectionMode="Single"
+                            IsSynchronizedWithCurrentItem="True"
                             ItemsSource="{Binding TradesCollectionView}"
             >
 

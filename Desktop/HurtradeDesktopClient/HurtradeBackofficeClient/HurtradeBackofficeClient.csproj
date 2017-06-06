@@ -155,6 +155,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BackofficeSharedData\BackofficeSharedData.csproj">
+      <Project>{e46aea7c-0d73-455e-839f-aff3699ec8c7}</Project>
+      <Name>BackofficeSharedData</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SharedData\SharedData.csproj">
       <Project>{e6890d85-bbe2-45d2-b9b5-cca16ab65a23}</Project>
       <Name>SharedData</Name>

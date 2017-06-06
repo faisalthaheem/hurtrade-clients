@@ -106,6 +106,8 @@
                             Margin = "10,10,0,0" 
                             VerticalAlignment = "Top" 
                             Width = "auto" 
+                            SelectionMode="Single"
+                            IsSynchronizedWithCurrentItem="True"
                             ItemsSource="{Binding TradesCollectionView}"
             >
 
@@ -117,6 +119,7 @@
                                     <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "50"/>
                                     <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
                                     <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
+                                    <GridViewColumn Header = "Client" DisplayMemberBinding = "{Binding ClientName}" Width = "auto"/>
                                 </GridView>
                             </ListView.View>
 

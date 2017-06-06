@@ -8,26 +8,31 @@ using SharedData.events;
 using System.Text;
 using SharedData.poco.trade;
 using SharedData.poco.updates;
+using BackofficeSharedData.poco.updates;
 
-namespace SharedData.Services
+namespace BackofficeSharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
+    public delegate void OfficePositionsUpdateReceivedHandler(object sender, OfficePositionsUpdateEventArgs e);
 
-    public class ClientService
+    public class DealerService
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
             (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private IModel _channel = null;
-        private static ClientService _instance = null;
-        private string clientExchangeName = string.Empty;
-        private string responseQueueName = string.Empty;
+        private static DealerService _instance = null;
+        private string officeExchangeName = string.Empty;
+        private string officeDealerOutQName = string.Empty;
+        private string officeDealerInQName = string.Empty;
+        private string consumerQueueName = string.Empty;
 
         public event UpdateReceivedHandler OnUpdateReceived;
+        public event OfficePositionsUpdateReceivedHandler OnOfficePositionsUpdateReceived;
 
         private string _username, _password;
 
-        private ClientService() {
+        private DealerService() {
             
         }
 
@@ -50,23 +55,24 @@ namespace SharedData.Services
             _instance._channel = null;
         }
 
-        public static ClientService GetInstance()
+        public static DealerService GetInstance()
         {
             if (null == _instance)
             {
-                _instance = new ClientService();
+                _instance = new DealerService();
             }
 
             return _instance;
         }
 
-        public bool init(string username, string password, string requestExchange, string responseQueue)
+        public bool init(string username, string password, string officeExchangeName, string officeDealerOutQName, string officeDealerInQName)
         {
             bool ret = true;
             try
             {
-                this.clientExchangeName = requestExchange;
-                this.responseQueueName = responseQueue;
+                this.officeExchangeName = officeExchangeName;
+                this.officeDealerOutQName = officeDealerOutQName;
+                this.officeDealerInQName = officeDealerInQName;
                 _username = username;
                 _password = password;
                 
@@ -78,13 +84,14 @@ namespace SharedData.Services
                 }.CreateConnection().CreateModel();
 
                 #region setup
-                
-                _channel.QueueBind(responseQueueName, clientExchangeName, "response");
+
+                consumerQueueName = _channel.QueueDeclare(string.Empty, false, false, true, null).QueueName;
+                _channel.QueueBind(consumerQueueName, officeExchangeName, "todealer");
 
                 var qResponseMsgConsumer = new EventingBasicConsumer(_channel);
                 qResponseMsgConsumer.Received += qResponseMsgConsumer_Received;
 
-                _channel.BasicConsume(responseQueueName, false, qResponseMsgConsumer);
+                _channel.BasicConsume(consumerQueueName, false, qResponseMsgConsumer);
 
                 #endregion
             }
@@ -103,16 +110,17 @@ namespace SharedData.Services
             try
             {
                 var body = e.Body;
+                string messageType = e.BasicProperties.Type;
                 _channel.BasicAck(e.DeliveryTag, false);
+                
+                if (messageType.Equals("officePositions")) {
+                    OfficePositionsUpdate update = JsonConvert.DeserializeObject<OfficePositionsUpdate>(ASCIIEncoding.UTF8.GetString(body));
 
-                ClientUpdateEventArgs update = JsonConvert.DeserializeObject<ClientUpdateEventArgs>(ASCIIEncoding.UTF8.GetString(body));
-
-                Console.WriteLine(ASCIIEncoding.UTF8.GetString(body));
-
-                Task.Factory.StartNew(() =>
-                {
-                    RaiseOnUpdateReceived(update);
-                });
+                    Task.Factory.StartNew(() =>
+                    {
+                        OnOfficePositionsUpdateReceived(this, new OfficePositionsUpdateEventArgs(update));
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -120,18 +128,18 @@ namespace SharedData.Services
             }
         }
 
-        public void requestTrade(TradeRequest request)
-        {
-            IBasicProperties props = _channel.CreateBasicProperties();
-            props.UserId = _username;
+        //public void requestTrade(TradeRequest request)
+        //{
+        //    IBasicProperties props = _channel.CreateBasicProperties();
+        //    props.UserId = _username;
 
-            _channel.BasicPublish(
-                        clientExchangeName,
-                        "request",
-                        props,
-                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
-                    );
-        }
+        //    _channel.BasicPublish(
+        //                clientExchangeName,
+        //                "request",
+        //                props,
+        //                UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
+        //            );
+        //}
         
     }
 }

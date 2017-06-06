@@ -14,6 +14,8 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.SimpleChildWindow.Utils;
 using SharedData.poco.positions;
 using SharedData.Services;
+using BackofficeSharedData.Services;
+using BackofficeSharedData.poco.updates;
 
 namespace HurtradeBackofficeClient.ViewModels
 {
@@ -40,6 +42,8 @@ namespace HurtradeBackofficeClient.ViewModels
         private string officeExchangeName = string.Empty;
         private string clientExchangeName = string.Empty;
         private string responseQueueName = string.Empty;
+        private string officeDealerOutQName = string.Empty;
+        private string officeDealerInQName = string.Empty;
         private string username = string.Empty;
         private string password = string.Empty;
         
@@ -77,12 +81,14 @@ namespace HurtradeBackofficeClient.ViewModels
         private void ExecuteWindowClosing()
         {
             ClientService.GetInstance().OnUpdateReceived -= OnUpdateReceived;
+            DealerService.GetInstance().OnOfficePositionsUpdateReceived -= OnOfficePositionsUpdateReceived;
         }
 
         private async void ExecuteWindowLoaded()
         {
-            ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived; ;
-
+            ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
+            DealerService.GetInstance().OnOfficePositionsUpdateReceived += OnOfficePositionsUpdateReceived;
+            
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
             LoginDialogData creds = await _dialogCoord.ShowLoginAsync(this, "Authentication", "Login to continue using your account");
@@ -117,6 +123,40 @@ namespace HurtradeBackofficeClient.ViewModels
 
         }
 
+        private void OnOfficePositionsUpdateReceived(object sender, OfficePositionsUpdateEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                lock (lockTrades)
+                {
+                    int currentIndex = TradesCollectionView.CurrentPosition;
+
+                    foreach (var row in e.OfficePositionsUpdate)
+                    {
+                        int idx = -1;
+                        foreach (var t in row.Value)
+                        {
+                            idx = Trades.IndexOf(t);
+                            t.ClientName = row.Key;
+                            //for the back office client's profit equates to loss
+                            t.CurrentPl *= -1;
+                            if (idx >= 0)
+                            {
+                                Trades[idx] = t;
+                            }
+                            else
+                            {
+                                Trades.Add(t);
+                            }
+                        }
+                    }
+
+                    TradesCollectionView.MoveCurrentToPosition(currentIndex);
+                    TradesCollectionView.Refresh();
+                }
+            });
+        }
+
         private void OnUpdateReceived(object sender, SharedData.poco.updates.ClientUpdateEventArgs e)
         {
 
@@ -148,27 +188,7 @@ namespace HurtradeBackofficeClient.ViewModels
                     QuoteCollectionView.Refresh();
                 }
 
-                lock(lockTrades)
-                {
-                    int currentIndex = TradesCollectionView.CurrentPosition;
-
-                    int idx = -1;
-                    foreach(var t in e.Positions.Values)
-                    {
-                        idx = Trades.IndexOf(t);
-                        if(idx >= 0)
-                        {
-                            Trades[idx] = t;
-                        }
-                        else
-                        {
-                            Trades.Add(t);
-                        }
-                    }
-
-                    TradesCollectionView.MoveCurrentToPosition(currentIndex);
-                    TradesCollectionView.Refresh();
-                }
+                
             });
         }
 
@@ -177,7 +197,11 @@ namespace HurtradeBackofficeClient.ViewModels
             officeExchangeName = e.GenericResponse["officeExchangeName"];
             clientExchangeName = e.GenericResponse["clientExchangeName"];
             responseQueueName = e.GenericResponse["responseQueueName"];
-            ClientService.GetInstance().init(username, password, officeExchangeName, clientExchangeName, responseQueueName);
+            officeDealerInQName = e.GenericResponse["officeDealerInQName"];
+            officeDealerOutQName = e.GenericResponse["officeDealerOutQName"];
+
+            ClientService.GetInstance().init(username, password, clientExchangeName, responseQueueName);
+            DealerService.GetInstance().init(username, password, officeExchangeName, officeDealerOutQName, officeDealerInQName);
 
             System.Windows.Threading.
                   Dispatcher.CurrentDispatcher.Invoke(async () => {

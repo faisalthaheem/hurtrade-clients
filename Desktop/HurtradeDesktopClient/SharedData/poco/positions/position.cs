@@ -30,6 +30,8 @@ namespace SharedData.poco.positions
         private decimal openPrice;
         //what state the order currently is in
         private string orderState;
+        //locally populated
+        private string clientName;
 
         public string OrderType { get => orderType; set => orderType = value; }
         public string Commodity { get => commodity; set => commodity = value; }
@@ -38,6 +40,7 @@ namespace SharedData.poco.positions
         public Guid OrderId { get => orderId; set => orderId = value; }
         public decimal OpenPrice { get => openPrice; set => openPrice = value; }
         public string OrderState { get => orderState; set => orderState = value; }
+        public string ClientName { get => clientName; set => clientName = value; }
 
         public override bool Equals(object obj)
         {
