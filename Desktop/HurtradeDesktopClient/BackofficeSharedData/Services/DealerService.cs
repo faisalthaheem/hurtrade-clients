@@ -30,7 +30,15 @@ namespace BackofficeSharedData.Services
         public event UpdateReceivedHandler OnUpdateReceived;
         public event OfficePositionsUpdateReceivedHandler OnOfficePositionsUpdateReceived;
 
+        private Object lockChannel = new Object();
+
         private string _username, _password;
+
+        #region Command Verbs
+        public const string COMMAND_VERB_APPROVE = "approve";
+        public const string COMMAND_VERB_REJECT = "reject";
+        public const string COMMAND_VERB_REQUOTE = "requote";
+        #endregion
 
         private DealerService() {
             
@@ -127,19 +135,34 @@ namespace BackofficeSharedData.Services
                 log.Error(ex);
             }
         }
-
-        //public void requestTrade(TradeRequest request)
-        //{
-        //    IBasicProperties props = _channel.CreateBasicProperties();
-        //    props.UserId = _username;
-
-        //    _channel.BasicPublish(
-        //                clientExchangeName,
-        //                "request",
-        //                props,
-        //                UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
-        //            );
-        //}
         
+        public void approveRejectOrder(string clientUsername, Guid orderid, string commandVerb)
+        {
+            GenericRequestResponseDictionary request = new GenericRequestResponseDictionary();
+            request["client"] = clientUsername;
+            request["orderId"] = orderid.ToString();
+
+            lock (lockChannel)
+            {
+                try
+                {
+                    IBasicProperties props = _channel.CreateBasicProperties();
+                    props.UserId = _username;
+                    props.Type = commandVerb;
+
+                    _channel.BasicPublish(
+                        officeExchangeName,
+                        "fromdealer",
+                        props,
+                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
+                    );
+                    
+                }catch(Exception ex)
+                {
+                    log.Error(ex.Message, ex);
+                }
+            }
+        }
+
     }
 }

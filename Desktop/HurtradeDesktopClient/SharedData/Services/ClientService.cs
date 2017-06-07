@@ -12,6 +12,7 @@ using SharedData.poco.updates;
 namespace SharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
+    public delegate void OrderUpdateEventHandler(object sender, GenericResponseEventArgs e);
 
     public class ClientService
     {
@@ -24,6 +25,7 @@ namespace SharedData.Services
         private string responseQueueName = string.Empty;
 
         public event UpdateReceivedHandler OnUpdateReceived;
+        public event OrderUpdateEventHandler OnOrderUpdateReceived;
 
         private string _username, _password;
 
@@ -103,15 +105,32 @@ namespace SharedData.Services
             try
             {
                 var body = e.Body;
+                IBasicProperties props = e.BasicProperties;
                 _channel.BasicAck(e.DeliveryTag, false);
 
-                ClientUpdateEventArgs update = JsonConvert.DeserializeObject<ClientUpdateEventArgs>(ASCIIEncoding.UTF8.GetString(body));
+                
 
                 Console.WriteLine(ASCIIEncoding.UTF8.GetString(body));
 
                 Task.Factory.StartNew(() =>
                 {
-                    RaiseOnUpdateReceived(update);
+                    if(props.Type != null && props.Type.Equals("orderUpdate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (null != OnOrderUpdateReceived)
+                        {
+                            GenericRequestResponseDictionary update = JsonConvert.DeserializeObject<GenericRequestResponseDictionary>(ASCIIEncoding.UTF8.GetString(body));
+                            OnOrderUpdateReceived(this, new GenericResponseEventArgs() { GenericResponse = update });
+                        }
+                    }
+                    else
+                    {
+                        if (null != OnUpdateReceived)
+                        {
+                            ClientUpdateEventArgs update = JsonConvert.DeserializeObject<ClientUpdateEventArgs>(ASCIIEncoding.UTF8.GetString(body));
+                            OnUpdateReceived(this, update);
+                        }
+                    }
+                    
                 });
             }
             catch (Exception ex)

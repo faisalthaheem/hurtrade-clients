@@ -16,6 +16,7 @@ using SharedData.poco.positions;
 using SharedData.Services;
 using BackofficeSharedData.Services;
 using BackofficeSharedData.poco.updates;
+using System.Linq;
 
 namespace HurtradeBackofficeClient.ViewModels
 {
@@ -24,6 +25,8 @@ namespace HurtradeBackofficeClient.ViewModels
         #region Commands
         public DelegateCommand TradeBuyCommand { get; private set; }
         public DelegateCommand TradeSellCommand { get; private set; }
+        public DelegateCommand ApproveSelectedTradeCommand { get; private set; }
+        public DelegateCommand RejectSelectedTradeCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         #endregion
@@ -74,8 +77,38 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
             TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            ApproveSelectedTradeCommand = new DelegateCommand(ExecuteApproveSelectedTradeCommand);
+            RejectSelectedTradeCommand = new DelegateCommand(ExecuteRejectSelectedTradeCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
+        }
+
+        private void ExecuteApproveSelectedTradeCommand()
+        {
+            lock (lockTrades)
+            {
+                SharedData.poco.positions.Position position = TradesCollectionView.CurrentItem as SharedData.poco.positions.Position;
+                if(position == null)
+                {
+                    //todo show error
+                    return;
+                }
+                DealerService.GetInstance().approveRejectOrder(position.ClientName, position.OrderId, DealerService.COMMAND_VERB_APPROVE);
+            }
+        }
+
+        private void ExecuteRejectSelectedTradeCommand()
+        {
+            lock (lockTrades)
+            {
+                SharedData.poco.positions.Position position = TradesCollectionView.CurrentItem as SharedData.poco.positions.Position;
+                if (position == null)
+                {
+                    //todo show error
+                    return;
+                }
+                DealerService.GetInstance().approveRejectOrder(position.ClientName, position.OrderId, DealerService.COMMAND_VERB_REJECT);
+            }
         }
 
         private void ExecuteWindowClosing()
@@ -133,6 +166,9 @@ namespace HurtradeBackofficeClient.ViewModels
 
                     foreach (var row in e.OfficePositionsUpdate)
                     {
+                        var values = row.Value;
+                        var notPresent = Trades.Where(p => !values.Any(p2 => p2.Equals(p)));
+
                         int idx = -1;
                         foreach (var t in row.Value)
                         {
@@ -150,7 +186,12 @@ namespace HurtradeBackofficeClient.ViewModels
                             }
                         }
                     }
-
+                    
+                    //in case we removed items and the list shortened
+                    if(currentIndex > TradesCollectionView.Count)
+                    {
+                        currentIndex = TradesCollectionView.Count;
+                    }
                     TradesCollectionView.MoveCurrentToPosition(currentIndex);
                     TradesCollectionView.Refresh();
                 }
