@@ -30,7 +30,7 @@ namespace HurtradeDesktopClient.ViewModels
         public ObservableCollection<Quote> Quotes = new ObservableCollection<Quote>();
         public ListCollectionView QuoteCollectionView { get; private set; }
 
-        public ObservableCollection<SharedData.poco.positions.Position> Trades = new ObservableCollection<SharedData.poco.positions.Position>();
+        public ObservableCollection<SharedData.poco.positions.TradePosition> Trades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
         public ListCollectionView TradesCollectionView { get; private set; }
         #endregion
 
@@ -125,47 +125,25 @@ namespace HurtradeDesktopClient.ViewModels
                 {
                     int currentIndex = QuoteCollectionView.CurrentPosition;
 
-                    int idx = -1;
-                    foreach (var q in e.ClientQuotes.Values)
-                    {
-                        //Quotes.Add(q);
-                        idx = Quotes.IndexOf(q);
-                        if (idx >= 0)
-                        {
-                            Quotes[idx] = q;
-                        }
-                        else
-                        {
-                            Quotes.Add(q);
-                        }
-
-                        log.Info(q.Name + " B: " + q.Bid + " A: " + q.Ask);
-                        Console.WriteLine(q.Name + " B: " + q.Bid + " A: " + q.Ask);
-                    }
+                    Quotes.Clear();
+                    Quotes.AddRange(e.ClientQuotes.Values);
 
                     QuoteCollectionView.MoveCurrentToPosition(currentIndex);
                     QuoteCollectionView.Refresh();
                 }
+                
 
                 lock(lockTrades)
                 {
                     int currentIndex = TradesCollectionView.CurrentPosition;
 
-                    int idx = -1;
-                    foreach(var t in e.Positions.Values)
-                    {
-                        idx = Trades.IndexOf(t);
-                        if(idx >= 0)
-                        {
-                            Trades[idx] = t;
-                        }
-                        else
-                        {
-                            Trades.Add(t);
-                        }
-                    }
+                    Trades.Clear();
+                    Trades.AddRange(e.Positions.Values);
 
-                    TradesCollectionView.MoveCurrentToPosition(currentIndex);
+                    if (TradesCollectionView.Count >= currentIndex)
+                    {
+                        TradesCollectionView.MoveCurrentToPosition(currentIndex);
+                    }
                     TradesCollectionView.Refresh();
                 }
             });

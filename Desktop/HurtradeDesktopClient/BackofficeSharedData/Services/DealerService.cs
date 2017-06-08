@@ -126,7 +126,13 @@ namespace BackofficeSharedData.Services
 
                     Task.Factory.StartNew(() =>
                     {
-                        OnOfficePositionsUpdateReceived(this, new OfficePositionsUpdateEventArgs(update));
+                        try
+                        {
+                            OnOfficePositionsUpdateReceived(this, new OfficePositionsUpdateEventArgs(update));
+                        }catch(Exception ex)
+                        {
+                            log.Error(ex);
+                        }
                     });
                 }
             }

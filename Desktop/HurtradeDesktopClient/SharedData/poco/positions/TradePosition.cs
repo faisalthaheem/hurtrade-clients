@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SharedData.poco.positions
 {
-    public class Position
+    public class TradePosition
     {
         public static string ORDER_TYPE_BUY = "b";
         public static string ORDER_TYPE_SELL = "s";
@@ -28,10 +28,20 @@ namespace SharedData.poco.positions
         private Guid orderId;
         //the price at which the commodity was requested
         private decimal openPrice;
+        //the price at which the commodity was requested close or was closed
+        private decimal closePrice;
         //what state the order currently is in
         private string orderState;
         //locally populated
         private string clientName;
+
+        //timestamps
+        private DateTime createdat;
+        private DateTime endedat;
+        private DateTime closedat;
+        private DateTime approvedopenat;
+        private DateTime approvedcloseat;
+
 
         public string OrderType { get => orderType; set => orderType = value; }
         public string Commodity { get => commodity; set => commodity = value; }
@@ -41,6 +51,12 @@ namespace SharedData.poco.positions
         public decimal OpenPrice { get => openPrice; set => openPrice = value; }
         public string OrderState { get => orderState; set => orderState = value; }
         public string ClientName { get => clientName; set => clientName = value; }
+        public DateTime Createdat { get => createdat; set => createdat = value; }
+        public DateTime Endedat { get => endedat; set => endedat = value; }
+        public DateTime Closedat { get => closedat; set => closedat = value; }
+        public DateTime Approvedopenat { get => approvedopenat; set => approvedopenat = value; }
+        public DateTime Approvedcloseat { get => approvedcloseat; set => approvedcloseat = value; }
+        public decimal ClosePrice { get => closePrice; set => closePrice = value; }
 
         public override bool Equals(object obj)
         {
@@ -49,7 +65,7 @@ namespace SharedData.poco.positions
                 return false;
             }
 
-            Position p = obj as Position;
+            TradePosition p = obj as TradePosition;
             if (p == null)
             {
                 return false;
@@ -58,7 +74,7 @@ namespace SharedData.poco.positions
             return p.OrderId.Equals(OrderId);
         }
 
-        public bool Equals(Position p)
+        public bool Equals(TradePosition p)
         {
             if (p == null)
             {

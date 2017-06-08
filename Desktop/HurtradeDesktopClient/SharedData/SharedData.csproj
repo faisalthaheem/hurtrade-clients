@@ -53,7 +53,7 @@
   <ItemGroup>
     <Compile Include="events\GenericResponseEventArgs.cs" />
     <Compile Include="poco\GenericRequestResponseDictionary.cs" />
-    <Compile Include="poco\positions\position.cs" />
+    <Compile Include="poco\positions\TradePosition.cs" />
     <Compile Include="poco\Quote.cs" />
     <Compile Include="poco\QuoteList.cs" />
     <Compile Include="poco\trade\TradeRequest.cs" />

@@ -7,7 +7,7 @@ using SharedData.poco.positions;
 
 namespace BackofficeSharedData.poco.updates
 {
-    public class OfficePositionsUpdate : Dictionary<string, List<Position>>
+    public class OfficePositionsUpdate : Dictionary<string, List<TradePosition>>
     {
     }
 }

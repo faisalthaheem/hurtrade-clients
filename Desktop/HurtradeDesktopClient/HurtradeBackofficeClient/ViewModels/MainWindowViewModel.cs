@@ -35,8 +35,11 @@ namespace HurtradeBackofficeClient.ViewModels
         public ObservableCollection<Quote> Quotes = new ObservableCollection<Quote>();
         public ListCollectionView QuoteCollectionView { get; private set; }
 
-        public ObservableCollection<SharedData.poco.positions.Position> Trades = new ObservableCollection<SharedData.poco.positions.Position>();
-        public ListCollectionView TradesCollectionView { get; private set; }
+        public ObservableCollection<SharedData.poco.positions.TradePosition> PendingTrades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
+        public ListCollectionView PendingTradesCollectionView { get; private set; }
+
+        public ObservableCollection<SharedData.poco.positions.TradePosition> OpenTrades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
+        public ListCollectionView OpenTradesCollectionView { get; private set; }
         #endregion
 
 
@@ -65,7 +68,8 @@ namespace HurtradeBackofficeClient.ViewModels
 
         public MainWindowViewModel(MetroWindow mainWindow,IDialogCoordinator dialogCoordinator)
         {
-            TradesCollectionView = new ListCollectionView(Trades);
+            PendingTradesCollectionView = new ListCollectionView(PendingTrades);
+            OpenTradesCollectionView = new ListCollectionView(OpenTrades);
             QuoteCollectionView = new ListCollectionView(Quotes);
             _mainWindow = mainWindow;
            _dialogCoord = dialogCoordinator;
@@ -87,7 +91,7 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             lock (lockTrades)
             {
-                SharedData.poco.positions.Position position = TradesCollectionView.CurrentItem as SharedData.poco.positions.Position;
+                SharedData.poco.positions.TradePosition position = PendingTradesCollectionView.CurrentItem as SharedData.poco.positions.TradePosition;
                 if(position == null)
                 {
                     //todo show error
@@ -101,7 +105,7 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             lock (lockTrades)
             {
-                SharedData.poco.positions.Position position = TradesCollectionView.CurrentItem as SharedData.poco.positions.Position;
+                SharedData.poco.positions.TradePosition position = PendingTradesCollectionView.CurrentItem as SharedData.poco.positions.TradePosition;
                 if (position == null)
                 {
                     //todo show error
@@ -124,7 +128,7 @@ namespace HurtradeBackofficeClient.ViewModels
             
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
-            LoginDialogData creds = await _dialogCoord.ShowLoginAsync(this, "Authentication", "Login to continue using your account");
+            LoginDialogData creds = await _dialogCoord.ShowLoginAsync(this, "Backoffice Login", "Login to continue using your account");
             if (creds != null && !string.IsNullOrEmpty(creds.Username) && !string.IsNullOrEmpty(creds.Password))
             {
                 progressController = await _dialogCoord.ShowProgressAsync(this,"Please wait...", "Authenticating with server.");
@@ -162,38 +166,41 @@ namespace HurtradeBackofficeClient.ViewModels
             {
                 lock (lockTrades)
                 {
-                    int currentIndex = TradesCollectionView.CurrentPosition;
+                    int currentIndexPending = PendingTradesCollectionView.CurrentPosition;
+                    int currentIndexOpen = OpenTradesCollectionView.CurrentPosition;
 
                     foreach (var row in e.OfficePositionsUpdate)
                     {
-                        var values = row.Value;
-                        var notPresent = Trades.Where(p => !values.Any(p2 => p2.Equals(p)));
+                        PendingTrades.Clear();
+                        OpenTrades.Clear();
 
-                        int idx = -1;
                         foreach (var t in row.Value)
                         {
-                            idx = Trades.IndexOf(t);
                             t.ClientName = row.Key;
-                            //for the back office client's profit equates to loss
-                            t.CurrentPl *= -1;
-                            if (idx >= 0)
+
+                            if(t.OrderState.Equals(SharedData.poco.positions.TradePosition.ORDER_STATE_OPEN))
                             {
-                                Trades[idx] = t;
+                                OpenTrades.Add(t);
                             }
                             else
                             {
-                                Trades.Add(t);
+                                PendingTrades.Add(t);
                             }
                         }
                     }
-                    
-                    //in case we removed items and the list shortened
-                    if(currentIndex > TradesCollectionView.Count)
+
+
+                    if (PendingTradesCollectionView.Count >= currentIndexPending)
                     {
-                        currentIndex = TradesCollectionView.Count;
+                        PendingTradesCollectionView.MoveCurrentToPosition(currentIndexPending);
                     }
-                    TradesCollectionView.MoveCurrentToPosition(currentIndex);
-                    TradesCollectionView.Refresh();
+                    PendingTradesCollectionView.Refresh();
+
+                    if (OpenTradesCollectionView.Count >= currentIndexOpen)
+                    {
+                        OpenTradesCollectionView.MoveCurrentToPosition(currentIndexOpen);
+                    }
+                    OpenTradesCollectionView.Refresh();
                 }
             });
         }
@@ -207,29 +214,12 @@ namespace HurtradeBackofficeClient.ViewModels
                 {
                     int currentIndex = QuoteCollectionView.CurrentPosition;
 
-                    int idx = -1;
-                    foreach (var q in e.ClientQuotes.Values)
-                    {
-                        //Quotes.Add(q);
-                        idx = Quotes.IndexOf(q);
-                        if (idx >= 0)
-                        {
-                            Quotes[idx] = q;
-                        }
-                        else
-                        {
-                            Quotes.Add(q);
-                        }
-
-                        log.Info(q.Name + " B: " + q.Bid + " A: " + q.Ask);
-                        Console.WriteLine(q.Name + " B: " + q.Bid + " A: " + q.Ask);
-                    }
-
+                    Quotes.Clear();
+                    Quotes.AddRange(e.ClientQuotes.Values);
+                    
                     QuoteCollectionView.MoveCurrentToPosition(currentIndex);
                     QuoteCollectionView.Refresh();
                 }
-
-                
             });
         }
 
