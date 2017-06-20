@@ -177,6 +177,7 @@ namespace HurtradeBackofficeClient.ViewModels
                         foreach (var t in row.Value)
                         {
                             t.ClientName = row.Key;
+                            t.CurrentPl *= -1.0M;
 
                             if(t.OrderState.Equals(SharedData.poco.positions.TradePosition.ORDER_STATE_OPEN))
                             {
@@ -210,15 +211,18 @@ namespace HurtradeBackofficeClient.ViewModels
 
             App.Current.Dispatcher.Invoke((Action)delegate
             {
-                lock (lockQuotes)
+                if (null != e.ClientQuotes && e.ClientQuotes.Count > 0)
                 {
-                    int currentIndex = QuoteCollectionView.CurrentPosition;
+                    lock (lockQuotes)
+                    {
+                        int currentIndex = QuoteCollectionView.CurrentPosition;
 
-                    Quotes.Clear();
-                    Quotes.AddRange(e.ClientQuotes.Values);
-                    
-                    QuoteCollectionView.MoveCurrentToPosition(currentIndex);
-                    QuoteCollectionView.Refresh();
+                        Quotes.Clear();
+                        Quotes.AddRange(e.ClientQuotes.Values);
+
+                        QuoteCollectionView.MoveCurrentToPosition(currentIndex);
+                        QuoteCollectionView.Refresh();
+                    }
                 }
             });
         }

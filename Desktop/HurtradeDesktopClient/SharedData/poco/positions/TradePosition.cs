@@ -8,8 +8,8 @@ namespace SharedData.poco.positions
 {
     public class TradePosition
     {
-        public static string ORDER_TYPE_BUY = "b";
-        public static string ORDER_TYPE_SELL = "s";
+        public static string ORDER_TYPE_BUY = "buy";
+        public static string ORDER_TYPE_SELL = "sell";
     
         public static string ORDER_STATE_PENDING_OPEN = "pending_dealer_open";
         public static string ORDER_STATE_OPEN = "open";

@@ -8,6 +8,7 @@ using SharedData.events;
 using System.Text;
 using SharedData.poco.trade;
 using SharedData.poco.updates;
+using System.Collections.Generic;
 
 namespace SharedData.Services
 {
@@ -143,6 +144,7 @@ namespace SharedData.Services
         {
             IBasicProperties props = _channel.CreateBasicProperties();
             props.UserId = _username;
+            props.Type = "trade";
 
             _channel.BasicPublish(
                         clientExchangeName,
@@ -151,6 +153,23 @@ namespace SharedData.Services
                         UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
                     );
         }
-        
+
+        public void requestTradeClosure(Guid orderid)
+        {
+            IBasicProperties props = _channel.CreateBasicProperties();
+            props.UserId = _username;
+            props.Type = "tradeClosure";
+
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            dic["orderid"] = orderid.ToString();
+
+            _channel.BasicPublish(
+                        clientExchangeName,
+                        "request",
+                        props,
+                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dic))
+                    );
+        }
+
     }
 }

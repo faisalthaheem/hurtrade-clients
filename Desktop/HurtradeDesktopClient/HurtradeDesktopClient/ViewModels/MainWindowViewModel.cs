@@ -22,6 +22,7 @@ namespace HurtradeDesktopClient.ViewModels
         #region Commands
         public DelegateCommand TradeBuyCommand { get; private set; }
         public DelegateCommand TradeSellCommand { get; private set; }
+        public DelegateCommand TradeCloseCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         #endregion
@@ -69,6 +70,7 @@ namespace HurtradeDesktopClient.ViewModels
         {
             TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
             TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            TradeCloseCommand = new DelegateCommand(ExecuteTradeCloseCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
         }
@@ -121,30 +123,36 @@ namespace HurtradeDesktopClient.ViewModels
 
             App.Current.Dispatcher.Invoke((Action)delegate
             {
-                lock (lockQuotes)
+                if (null != e.ClientQuotes && e.ClientQuotes.Count > 0)
                 {
-                    int currentIndex = QuoteCollectionView.CurrentPosition;
-
-                    Quotes.Clear();
-                    Quotes.AddRange(e.ClientQuotes.Values);
-
-                    QuoteCollectionView.MoveCurrentToPosition(currentIndex);
-                    QuoteCollectionView.Refresh();
-                }
-                
-
-                lock(lockTrades)
-                {
-                    int currentIndex = TradesCollectionView.CurrentPosition;
-
-                    Trades.Clear();
-                    Trades.AddRange(e.Positions.Values);
-
-                    if (TradesCollectionView.Count >= currentIndex)
+                    lock (lockQuotes)
                     {
-                        TradesCollectionView.MoveCurrentToPosition(currentIndex);
+                        int currentIndex = QuoteCollectionView.CurrentPosition;
+
+                        Quotes.Clear();
+                        Quotes.AddRange(e.ClientQuotes.Values);
+
+                        QuoteCollectionView.MoveCurrentToPosition(currentIndex);
+                        QuoteCollectionView.Refresh();
                     }
-                    TradesCollectionView.Refresh();
+                }
+
+
+                if (null != e.Positions && e.Positions.Count > 0)
+                {
+                    lock (lockTrades)
+                    {
+                        int currentIndex = TradesCollectionView.CurrentPosition;
+
+                        Trades.Clear();
+                        Trades.AddRange(e.Positions.Values);
+
+                        if (TradesCollectionView.Count >= currentIndex)
+                        {
+                            TradesCollectionView.MoveCurrentToPosition(currentIndex);
+                        }
+                        TradesCollectionView.Refresh();
+                    }
                 }
             });
         }
@@ -167,6 +175,15 @@ namespace HurtradeDesktopClient.ViewModels
                       //we are done here
                       AuthService.Cleanup();
                   });
+        }
+
+        private void ExecuteTradeCloseCommand()
+        {
+            lock(lockTrades)
+            {
+                TradePosition currPosition = TradesCollectionView.CurrentItem as TradePosition;
+                ClientService.GetInstance().requestTradeClosure(currPosition.OrderId);
+            }
         }
         
         private async void ExecuteTradeCommand(bool isBuy)

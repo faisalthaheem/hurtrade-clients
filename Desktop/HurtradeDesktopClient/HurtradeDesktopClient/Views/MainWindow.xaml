@@ -135,7 +135,13 @@
                                 </GridView>
                             </ListView.View>
 
-                        </ListView>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Close" Command="{Binding TradeCloseCommand}"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+
+                    </ListView>
                     </TabItem>
                 <TabItem Header="Orders">
 
