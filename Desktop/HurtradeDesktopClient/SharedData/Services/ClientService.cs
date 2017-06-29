@@ -123,7 +123,7 @@ namespace SharedData.Services
                             OnOrderUpdateReceived(this, new GenericResponseEventArgs() { GenericResponse = update });
                         }
                     }
-                    else
+                    else if (props.Type != null && props.Type.Equals("update", StringComparison.OrdinalIgnoreCase))
                     {
                         if (null != OnUpdateReceived)
                         {
@@ -131,7 +131,13 @@ namespace SharedData.Services
                             OnUpdateReceived(this, update);
                         }
                     }
-                    
+                    else if (props.Type != null && props.Type.Equals("accountStatus", StringComparison.OrdinalIgnoreCase))
+                    {
+                        //GenericRequestResponseDictionary update = JsonConvert.DeserializeObject<GenericRequestResponseDictionary>(ASCIIEncoding.UTF8.GetString(body));
+                        Console.WriteLine(ASCIIEncoding.UTF8.GetString(body));
+                    }
+
+
                 });
             }
             catch (Exception ex)
