@@ -166,42 +166,53 @@ namespace HurtradeBackofficeClient.ViewModels
             {
                 lock (lockTrades)
                 {
-                    int currentIndexPending = PendingTradesCollectionView.CurrentPosition;
-                    int currentIndexOpen = OpenTradesCollectionView.CurrentPosition;
-
-                    foreach (var row in e.OfficePositionsUpdate)
+                    if (e.OfficePositionsUpdate.Count > 0)
                     {
-                        PendingTrades.Clear();
-                        OpenTrades.Clear();
+                        int currentIndexPending = PendingTradesCollectionView.CurrentPosition;
+                        int currentIndexOpen = OpenTradesCollectionView.CurrentPosition;
 
-                        foreach (var t in row.Value)
+                        foreach (var row in e.OfficePositionsUpdate)
                         {
-                            t.ClientName = row.Key;
-                            t.CurrentPl *= -1.0M;
+                            PendingTrades.Clear();
+                            OpenTrades.Clear();
 
-                            if(t.OrderState.Equals(SharedData.poco.positions.TradePosition.ORDER_STATE_OPEN))
+                            foreach (var t in row.Value)
                             {
-                                OpenTrades.Add(t);
-                            }
-                            else
-                            {
-                                PendingTrades.Add(t);
+                                t.ClientName = row.Key;
+                                t.CurrentPl *= -1.0M;
+
+                                if (t.OrderState.Equals(SharedData.poco.positions.TradePosition.ORDER_STATE_OPEN))
+                                {
+                                    OpenTrades.Add(t);
+                                }
+                                else
+                                {
+                                    PendingTrades.Add(t);
+                                }
                             }
                         }
+
+
+                        if (PendingTradesCollectionView.Count >= currentIndexPending)
+                        {
+                            PendingTradesCollectionView.MoveCurrentToPosition(currentIndexPending);
+                        }
+                        PendingTradesCollectionView.Refresh();
+
+                        if (OpenTradesCollectionView.Count >= currentIndexOpen)
+                        {
+                            OpenTradesCollectionView.MoveCurrentToPosition(currentIndexOpen);
+                        }
+                        OpenTradesCollectionView.Refresh();
                     }
-
-
-                    if (PendingTradesCollectionView.Count >= currentIndexPending)
+                    else
                     {
-                        PendingTradesCollectionView.MoveCurrentToPosition(currentIndexPending);
-                    }
-                    PendingTradesCollectionView.Refresh();
+                        OpenTrades.Clear();
+                        PendingTrades.Clear();
 
-                    if (OpenTradesCollectionView.Count >= currentIndexOpen)
-                    {
-                        OpenTradesCollectionView.MoveCurrentToPosition(currentIndexOpen);
+                        PendingTradesCollectionView.Refresh();
+                        OpenTradesCollectionView.Refresh();
                     }
-                    OpenTradesCollectionView.Refresh();
                 }
             });
         }

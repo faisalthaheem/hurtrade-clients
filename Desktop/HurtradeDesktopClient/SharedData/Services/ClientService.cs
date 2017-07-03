@@ -14,6 +14,7 @@ namespace SharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
     public delegate void OrderUpdateEventHandler(object sender, GenericResponseEventArgs e);
+    public delegate void AccountStatusEventHandler(object sender, GenericResponseEventArgs e);
 
     public class ClientService
     {
@@ -27,6 +28,7 @@ namespace SharedData.Services
 
         public event UpdateReceivedHandler OnUpdateReceived;
         public event OrderUpdateEventHandler OnOrderUpdateReceived;
+        public event AccountStatusEventHandler OnAccountStatusEventReceived;
 
         private string _username, _password;
 
@@ -133,8 +135,11 @@ namespace SharedData.Services
                     }
                     else if (props.Type != null && props.Type.Equals("accountStatus", StringComparison.OrdinalIgnoreCase))
                     {
-                        //GenericRequestResponseDictionary update = JsonConvert.DeserializeObject<GenericRequestResponseDictionary>(ASCIIEncoding.UTF8.GetString(body));
-                        Console.WriteLine(ASCIIEncoding.UTF8.GetString(body));
+                        if(null != OnAccountStatusEventReceived)
+                        {
+                            GenericRequestResponseDictionary update = JsonConvert.DeserializeObject<GenericRequestResponseDictionary>(ASCIIEncoding.UTF8.GetString(body));
+                            OnAccountStatusEventReceived(this, new GenericResponseEventArgs() { GenericResponse = update });
+                        }
                     }
 
 

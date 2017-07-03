@@ -33,6 +33,74 @@ namespace HurtradeDesktopClient.ViewModels
 
         public ObservableCollection<SharedData.poco.positions.TradePosition> Trades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
         public ListCollectionView TradesCollectionView { get; private set; }
+
+        private decimal _availableCash = 0;
+        public decimal AvailableCash {
+            get
+            {
+                return _availableCash;
+            }
+            set
+            {
+                SetProperty(ref _availableCash, value);
+            }
+        }
+
+        private decimal _floatingPL = 0;
+        public decimal FloatingPL
+        {
+            get
+            {
+                return _floatingPL;
+            }
+            set
+            {
+                SetProperty(ref _floatingPL, value);
+            }
+        }
+
+        private decimal _usedMargin = 0;
+        public decimal UsedMargin
+        {
+            get
+            {
+                return _usedMargin;
+            }
+            set
+            {
+                SetProperty(ref _usedMargin, value);
+            }
+        }
+
+        private decimal _usableMargin = 0;
+        public decimal UsableMargin
+        {
+            get
+            {
+                return _usableMargin;
+            }
+            set
+            {
+                SetProperty(ref _usableMargin, value);
+            }
+        }
+
+
+        private decimal _equity;
+        public decimal Equity
+        {
+            get
+            {
+                return _equity;
+            }
+            set
+            {
+                SetProperty(ref _equity, value);
+            }
+        }
+
+        
+
         #endregion
 
 
@@ -82,7 +150,8 @@ namespace HurtradeDesktopClient.ViewModels
 
         private async void ExecuteWindowLoaded()
         {
-            ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived; ;
+            ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
+            ClientService.GetInstance().OnAccountStatusEventReceived += MainWindowViewModel_OnAccountStatusEventReceived;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -116,6 +185,17 @@ namespace HurtradeDesktopClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnAccountStatusEventReceived(object sender, SharedData.events.GenericResponseEventArgs e)
+        {
+            App.Current.Dispatcher.Invoke((Action)delegate {
+                AvailableCash = decimal.Parse(e.GenericResponse["availableCash"]);
+                FloatingPL = decimal.Parse(e.GenericResponse["floating"]);
+                UsedMargin = decimal.Parse(e.GenericResponse["usedMargin"]);
+                UsableMargin = decimal.Parse(e.GenericResponse["usable"]);
+                Equity = decimal.Parse(e.GenericResponse["equity"]);
+            });
         }
 
         private void OnUpdateReceived(object sender, SharedData.poco.updates.ClientUpdateEventArgs e)
@@ -153,6 +233,11 @@ namespace HurtradeDesktopClient.ViewModels
                         }
                         TradesCollectionView.Refresh();
                     }
+                }
+                else
+                {
+                    Trades.Clear();
+                    TradesCollectionView.Refresh();
                 }
             });
         }

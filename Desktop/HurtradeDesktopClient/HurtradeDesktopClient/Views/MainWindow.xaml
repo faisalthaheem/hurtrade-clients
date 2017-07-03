@@ -40,20 +40,93 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel
+        <DockPanel
             Grid.Row="0"
             Grid.Column="0"
+            Grid.RowSpan="2"
             >
-            <Button
-                Content="abc"
-                ></Button>
-        </StackPanel>
+            <Grid DockPanel.Dock="Top">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
 
-        <DockPanel
-            Grid.Column="0"
-            Grid.Row="1"
-            >
-            <ListView 
+                <!-- Available Cash -->
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Content="Available Cash"
+                    HorizontalContentAlignment="Right"
+                    />
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Content="{Binding AvailableCash}"
+                    />
+
+                <!-- Equity -->
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Content="Equity"
+                    HorizontalContentAlignment="Right"
+                    />
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Content="{Binding Equity}"
+                    />
+
+                <!-- Floating -->
+                <Label
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Content="Floating P/L"
+                    HorizontalContentAlignment="Right"
+                    />
+                <Label
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Content="{Binding FloatingPL}"
+                    />
+
+                <!-- Used Margin -->
+                <Label
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Content="Used Margin"
+                    HorizontalContentAlignment="Right"
+                    />
+                <Label
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Content="{Binding UsedMargin}"
+                    />
+
+                <!-- Usable -->
+                <Label
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Content="Usable Margin"
+                    HorizontalContentAlignment="Right"
+                    />
+                <Label
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Content="{Binding UsableMargin}"
+                    />
+
+            </Grid>
+
+            <DockPanel DockPanel.Dock="Bottom">
+                <ListView 
                 HorizontalAlignment = "Left" 
                 DockPanel.Dock="Top"
                 Margin = "10,10,0,0" 
@@ -66,37 +139,40 @@
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.CanContentScroll="False"
             >
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="BorderBrush" Value="LightGray" />
-                        <Setter Property="BorderThickness" Value="0,0,0,1" />
-                    </Style>
-                </ListView.ItemContainerStyle>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="BorderBrush" Value="LightGray" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
 
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Name}" 
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Name}" 
                   Width = "100"/>
 
-                        <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
+                            <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
                   Width = "100"/>
 
-                        <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
+                            <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
                   Width = "100"/>
 
-                    </GridView>
-                </ListView.View>
+                        </GridView>
+                    </ListView.View>
 
 
-                <ListView.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Buy" Command="{Binding TradeBuyCommand}"/>
-                        <MenuItem Header="Sell" Command="{Binding TradeSellCommand}"/>
-                    </ContextMenu>
-                </ListView.ContextMenu>
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Buy" Command="{Binding TradeBuyCommand}"/>
+                            <MenuItem Header="Sell" Command="{Binding TradeSellCommand}"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
 
-            </ListView>
+                </ListView>
+            </DockPanel>
         </DockPanel>
+
+        
 
         <DockPanel
             Grid.Column="1"
@@ -127,7 +203,7 @@
                                     <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
                                     <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
                                     <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
-                                    <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "50"/>
+                                    <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "150"/>
                                     <GridViewColumn Header = "Requested Open Price" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
                                     <GridViewColumn Header = "Requested Close Price" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>
                                     <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
