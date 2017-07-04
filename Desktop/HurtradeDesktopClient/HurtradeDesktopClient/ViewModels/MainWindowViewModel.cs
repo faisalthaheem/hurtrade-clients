@@ -14,6 +14,11 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.SimpleChildWindow.Utils;
 using SharedData.poco.positions;
 using SharedData.Services;
+using SharedData.events;
+using LiveCharts;
+using LiveCharts.Wpf;
+using LiveCharts.Defaults;
+using System.Collections.Generic;
 
 namespace HurtradeDesktopClient.ViewModels
 {
@@ -22,6 +27,7 @@ namespace HurtradeDesktopClient.ViewModels
         #region Commands
         public DelegateCommand TradeBuyCommand { get; private set; }
         public DelegateCommand TradeSellCommand { get; private set; }
+        public DelegateCommand CandlestickChartCommand { get; private set; }
         public DelegateCommand TradeCloseCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
@@ -33,6 +39,44 @@ namespace HurtradeDesktopClient.ViewModels
 
         public ObservableCollection<SharedData.poco.positions.TradePosition> Trades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
         public ListCollectionView TradesCollectionView { get; private set; }
+
+        private string[] _candleStickXLabels = null;
+        public string[] CandleStickXLabels
+        {
+            get
+            {
+                return _candleStickXLabels;
+            }
+            set
+            {
+                SetProperty(ref _candleStickXLabels, value);
+            }
+        }
+
+        private string _CandleStickHeading;
+        public string CandleStickHeading {
+            get
+            {
+                return _CandleStickHeading;
+            }
+            set
+            {
+                SetProperty(ref _CandleStickHeading, value);
+            }
+        }
+
+        public SeriesCollection _candleStickCollection = null;
+        public SeriesCollection CandleStickCollection
+        {
+            get
+            {
+                return _candleStickCollection;
+            }
+            set
+            {
+                SetProperty(ref _candleStickCollection, value);
+            }
+        }
 
         private decimal _availableCash = 0;
         public decimal AvailableCash {
@@ -138,9 +182,17 @@ namespace HurtradeDesktopClient.ViewModels
         {
             TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
             TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            CandlestickChartCommand = new DelegateCommand(ExecuteCandlestickChartCommand);
             TradeCloseCommand = new DelegateCommand(ExecuteTradeCloseCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
+        }
+
+        private void ExecuteCandlestickChartCommand()
+        {
+            string commodity = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
+            ClientService.GetInstance().requestCandleStickChartData(commodity);
+            CandleStickHeading = "Candle Stick Chart for " + commodity;
         }
 
         private void ExecuteWindowClosing()
@@ -152,6 +204,7 @@ namespace HurtradeDesktopClient.ViewModels
         {
             ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
             ClientService.GetInstance().OnAccountStatusEventReceived += MainWindowViewModel_OnAccountStatusEventReceived;
+            ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -176,8 +229,7 @@ namespace HurtradeDesktopClient.ViewModels
                     username = creds.Username;
                     password = creds.Password;
                 }
-
-
+                
             }
             else
             {
@@ -185,6 +237,27 @@ namespace HurtradeDesktopClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnCandleStickDataEventHandler(object sender, CandleStickDataEventArgs e)
+        {
+            //CandleStickCollection
+
+            List<string> xLabels = new List<string>(e.Data.Count);
+            ChartValues<OhlcPoint> candles = new ChartValues<OhlcPoint>();
+            e.Data.Reverse();
+
+            foreach(var cs in e.Data)
+            {
+                candles.Add(new OhlcPoint(cs.Open, cs.Highest, cs.Lowest, cs.Close));
+                xLabels.Add(cs.SampleFor.ToShortDateString() + " " + cs.SampleFor.ToShortTimeString());
+            }
+            
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                CandleStickCollection = new SeriesCollection { new CandleSeries { Values = candles } };
+                CandleStickXLabels = xLabels.ToArray();
+            });
         }
 
         private void MainWindowViewModel_OnAccountStatusEventReceived(object sender, SharedData.events.GenericResponseEventArgs e)
@@ -273,6 +346,7 @@ namespace HurtradeDesktopClient.ViewModels
         
         private async void ExecuteTradeCommand(bool isBuy)
         {
+
             TradeOrderWindow tow = new TradeOrderWindow();
             TradeOrderWindowViewModel towContext = tow.DataContext as TradeOrderWindowViewModel;
             towContext.View = tow;

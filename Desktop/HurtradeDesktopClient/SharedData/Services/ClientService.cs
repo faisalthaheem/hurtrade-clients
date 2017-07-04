@@ -9,12 +9,14 @@ using System.Text;
 using SharedData.poco.trade;
 using SharedData.poco.updates;
 using System.Collections.Generic;
+using SharedData.poco.charting;
 
 namespace SharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
     public delegate void OrderUpdateEventHandler(object sender, GenericResponseEventArgs e);
     public delegate void AccountStatusEventHandler(object sender, GenericResponseEventArgs e);
+    public delegate void CandleStickDataEventHandler(object sender, CandleStickDataEventArgs e);
 
     public class ClientService
     {
@@ -29,6 +31,7 @@ namespace SharedData.Services
         public event UpdateReceivedHandler OnUpdateReceived;
         public event OrderUpdateEventHandler OnOrderUpdateReceived;
         public event AccountStatusEventHandler OnAccountStatusEventReceived;
+        public event CandleStickDataEventHandler OnCandleStickDataEventHandler;
 
         private string _username, _password;
 
@@ -111,10 +114,6 @@ namespace SharedData.Services
                 IBasicProperties props = e.BasicProperties;
                 _channel.BasicAck(e.DeliveryTag, false);
 
-                
-
-                Console.WriteLine(ASCIIEncoding.UTF8.GetString(body));
-
                 Task.Factory.StartNew(() =>
                 {
                     if(props.Type != null && props.Type.Equals("orderUpdate", StringComparison.OrdinalIgnoreCase))
@@ -141,8 +140,17 @@ namespace SharedData.Services
                             OnAccountStatusEventReceived(this, new GenericResponseEventArgs() { GenericResponse = update });
                         }
                     }
+                    else if (props.Type != null && props.Type.Equals("candlestick", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (null != OnCandleStickDataEventHandler)
+                        {
+                            List<CandleStick> data = JsonConvert.DeserializeObject<List<CandleStick>>(ASCIIEncoding.UTF8.GetString(body));
+                            CandleStickDataEventArgs args = new CandleStickDataEventArgs() { Data = data };
+                            OnCandleStickDataEventHandler(this, args);
+                        }
+                    }
 
-
+                    
                 });
             }
             catch (Exception ex)
@@ -173,6 +181,26 @@ namespace SharedData.Services
 
             Dictionary<string, string> dic = new Dictionary<string, string>();
             dic["orderid"] = orderid.ToString();
+
+            _channel.BasicPublish(
+                        clientExchangeName,
+                        "request",
+                        props,
+                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dic))
+                    );
+        }
+
+
+        public void requestCandleStickChartData(string commodity)
+        {
+            IBasicProperties props = _channel.CreateBasicProperties();
+            props.UserId = _username;
+            props.Type = "candlestick";
+
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            dic["commodity"] = commodity;
+            dic["resolution"] = "hourly";
+            dic["samples"] = "30";
 
             _channel.BasicPublish(
                         clientExchangeName,
