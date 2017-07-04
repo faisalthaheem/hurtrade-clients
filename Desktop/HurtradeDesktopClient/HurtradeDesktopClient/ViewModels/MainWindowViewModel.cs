@@ -31,6 +31,7 @@ namespace HurtradeDesktopClient.ViewModels
         public DelegateCommand TradeCloseCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
+        public DelegateCommand WindowClosed { get; private set; }
         #endregion
 
         #region Properties
@@ -186,6 +187,7 @@ namespace HurtradeDesktopClient.ViewModels
             TradeCloseCommand = new DelegateCommand(ExecuteTradeCloseCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
+            WindowClosed = new DelegateCommand(ExecuteWindowClosed);
         }
 
         private void ExecuteCandlestickChartCommand()
@@ -198,7 +200,17 @@ namespace HurtradeDesktopClient.ViewModels
         private void ExecuteWindowClosing()
         {
             ClientService.GetInstance().OnUpdateReceived -= OnUpdateReceived;
+            ClientService.GetInstance().OnAccountStatusEventReceived -= MainWindowViewModel_OnAccountStatusEventReceived;
+            ClientService.GetInstance().OnCandleStickDataEventHandler -= MainWindowViewModel_OnCandleStickDataEventHandler;
+
+            ClientService.Cleanup();
         }
+
+        private void ExecuteWindowClosed()
+        {
+            Environment.Exit(0);
+        }
+
 
         private async void ExecuteWindowLoaded()
         {

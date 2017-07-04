@@ -54,8 +54,11 @@ namespace SharedData.Services
                 return;
             }
 
-            _instance._channel.Close();
-            _instance._channel = null;
+            if (_instance._channel != null && _instance._channel.IsOpen)
+            {
+                _instance._channel.Close();
+                _instance._channel = null;
+            }
         }
 
         public static ClientService GetInstance()

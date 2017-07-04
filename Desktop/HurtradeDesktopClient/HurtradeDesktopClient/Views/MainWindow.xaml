@@ -26,6 +26,9 @@
         <intr:EventTrigger EventName="Closing">
             <intr:InvokeCommandAction Command="{Binding WindowClosing}"/>
         </intr:EventTrigger>
+        <intr:EventTrigger EventName="Closed">
+            <intr:InvokeCommandAction Command="{Binding WindowClosed}"/>
+        </intr:EventTrigger>
     </intr:Interaction.Triggers>
 
     <Grid>
@@ -207,8 +210,8 @@
                                     <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
                                     <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
                                     <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "150"/>
-                                    <GridViewColumn Header = "Requested Open Price" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
-                                    <GridViewColumn Header = "Requested Close Price" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>
+                                    <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
+                                    <GridViewColumn Header = "Close" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>
                                     <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
                                     <GridViewColumn Header = "Opened At" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
                                 </GridView>
