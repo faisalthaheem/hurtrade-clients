@@ -10,6 +10,7 @@ using SharedData.poco.trade;
 using SharedData.poco.updates;
 using System.Collections.Generic;
 using SharedData.poco.charting;
+using SharedData.poco.positions;
 
 namespace SharedData.Services
 {
@@ -132,6 +133,70 @@ namespace SharedData.Services
                         if (null != OnUpdateReceived)
                         {
                             ClientUpdateEventArgs update = JsonConvert.DeserializeObject<ClientUpdateEventArgs>(ASCIIEncoding.UTF8.GetString(body));
+
+                            //for net calculation
+                            Dictionary<string, List<TradePosition>> netPosition = new Dictionary<string, List<TradePosition>>(update.Positions.Count);
+
+                            //fill in the current price against each of the positions
+                            foreach (var p in update.Positions)
+                            {
+                                if (p.Value.OrderType.Equals(TradePosition.ORDER_TYPE_BUY))
+                                {
+                                    p.Value.CurrentPrice = (update.ClientQuotes.ContainsKey(p.Value.Commodity)) ? update.ClientQuotes[p.Value.Commodity].Bid : decimal.Zero;
+                                }
+                                else {
+                                    p.Value.CurrentPrice = (update.ClientQuotes.ContainsKey(p.Value.Commodity)) ? update.ClientQuotes[p.Value.Commodity].Ask : decimal.Zero;
+                                }
+
+                                string key = p.Value.Commodity + "_" + p.Value.OrderType;
+                                if (!netPosition.ContainsKey(key))
+                                {
+                                    netPosition[key] = new List<TradePosition>();
+                                }
+                                netPosition[key].Add(p.Value);
+                            }
+
+                            //determine net position
+                            update.NetPosition = new Dictionary<Guid, TradePosition>();
+                            foreach (var row in netPosition)
+                            {
+                                string commodity = row.Key.Split(new char[] { '_' })[0];
+                                string type = row.Key.Split(new char[] { '_' })[1];
+
+                                decimal sumAmt = 0;
+                                decimal sumPL = 0;
+                                decimal price = 0;
+
+                                foreach(var p in row.Value)
+                                {
+                                    sumAmt += p.Amount;
+                                    sumPL += p.CurrentPl;
+                                    price += p.OpenPrice;
+                                }
+
+                                price /= (decimal)row.Value.Count;
+
+                                TradePosition position = new TradePosition();
+                                position.OrderId = Guid.NewGuid();
+                                position.Commodity = commodity;
+                                position.OrderType = type;
+                                position.OpenPrice = price;
+                                position.Amount = sumAmt;
+                                position.CurrentPl = sumPL;
+                                if (type.Equals(TradePosition.ORDER_TYPE_BUY)) {
+                                    position.CurrentPrice = update.ClientQuotes[commodity].Bid;
+                                }
+                                else
+                                {
+                                    position.CurrentPrice = update.ClientQuotes[commodity].Ask;
+                                }
+
+                                update.NetPosition.Add(position.OrderId, position);
+
+                            }
+
+                            //update net prices on the net positions
+
                             OnUpdateReceived(this, update);
                         }
                     }

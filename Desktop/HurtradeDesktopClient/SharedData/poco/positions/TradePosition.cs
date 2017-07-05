@@ -34,6 +34,8 @@ namespace SharedData.poco.positions
         private string orderState;
         //locally populated
         private string clientName;
+        //price filled locally by referring to the quotes
+        private decimal currentPrice;
 
         //timestamps
         private DateTime createdat;
@@ -57,6 +59,7 @@ namespace SharedData.poco.positions
         public DateTime Approvedopenat { get => approvedopenat; set => approvedopenat = value; }
         public DateTime Approvedcloseat { get => approvedcloseat; set => approvedcloseat = value; }
         public decimal ClosePrice { get => closePrice; set => closePrice = value; }
+        public decimal CurrentPrice { get => currentPrice; set => currentPrice = value; }
 
         public override bool Equals(object obj)
         {

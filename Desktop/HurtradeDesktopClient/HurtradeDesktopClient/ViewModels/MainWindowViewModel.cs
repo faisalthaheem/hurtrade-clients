@@ -38,8 +38,11 @@ namespace HurtradeDesktopClient.ViewModels
         public ObservableCollection<Quote> Quotes = new ObservableCollection<Quote>();
         public ListCollectionView QuoteCollectionView { get; private set; }
 
-        public ObservableCollection<SharedData.poco.positions.TradePosition> Trades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
+        public ObservableCollection<TradePosition> Trades = new ObservableCollection<TradePosition>();
         public ListCollectionView TradesCollectionView { get; private set; }
+
+        public ObservableCollection<TradePosition> NetTrades = new ObservableCollection<TradePosition>();
+        public ListCollectionView NetTradesCollectionView { get; private set; }
 
         private string[] _candleStickXLabels = null;
         public string[] CandleStickXLabels
@@ -172,6 +175,7 @@ namespace HurtradeDesktopClient.ViewModels
         public MainWindowViewModel(MetroWindow mainWindow,IDialogCoordinator dialogCoordinator)
         {
             TradesCollectionView = new ListCollectionView(Trades);
+            NetTradesCollectionView = new ListCollectionView(NetTrades);
             QuoteCollectionView = new ListCollectionView(Quotes);
             _mainWindow = mainWindow;
            _dialogCoord = dialogCoordinator;
@@ -288,6 +292,7 @@ namespace HurtradeDesktopClient.ViewModels
 
             App.Current.Dispatcher.Invoke((Action)delegate
             {
+                //quotes
                 if (null != e.ClientQuotes && e.ClientQuotes.Count > 0)
                 {
                     lock (lockQuotes)
@@ -302,7 +307,7 @@ namespace HurtradeDesktopClient.ViewModels
                     }
                 }
 
-
+                //current trades
                 if (null != e.Positions && e.Positions.Count > 0)
                 {
                     lock (lockTrades)
@@ -323,6 +328,26 @@ namespace HurtradeDesktopClient.ViewModels
                 {
                     Trades.Clear();
                     TradesCollectionView.Refresh();
+                }
+
+                //net trades
+                if (null != e.NetPosition && e.NetPosition.Count > 0)
+                {
+                    int currentIndex = NetTradesCollectionView.CurrentPosition;
+
+                    NetTrades.Clear();
+                    NetTrades.AddRange(e.NetPosition.Values);
+
+                    if (NetTradesCollectionView.Count >= currentIndex)
+                    {
+                        NetTradesCollectionView.MoveCurrentToPosition(currentIndex);
+                    }
+                    NetTradesCollectionView.Refresh();
+                }
+                else
+                {
+                    NetTrades.Clear();
+                    NetTradesCollectionView.Refresh();
                 }
             });
         }
