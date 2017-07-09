@@ -33,6 +33,8 @@ namespace HurtradeBackofficeClient.ViewModels
         public DelegateCommand CandlestickChartCommand { get; private set; }
         public DelegateCommand ApproveSelectedTradeCommand { get; private set; }
         public DelegateCommand RejectSelectedTradeCommand { get; private set; }
+        public DelegateCommand BulkApproveSelectedTradeCommand { get; private set; }
+        public DelegateCommand BulkRejectSelectedTradeCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         public DelegateCommand WindowClosed { get; private set; }
@@ -132,6 +134,8 @@ namespace HurtradeBackofficeClient.ViewModels
             CandlestickChartCommand = new DelegateCommand(ExecuteCandlestickChartCommand);
             ApproveSelectedTradeCommand = new DelegateCommand(ExecuteApproveSelectedTradeCommand);
             RejectSelectedTradeCommand = new DelegateCommand(ExecuteRejectSelectedTradeCommand);
+            BulkApproveSelectedTradeCommand = new DelegateCommand(ExecuteBulkApproveSelectedTradeCommand);
+            BulkRejectSelectedTradeCommand = new DelegateCommand(ExecuteBulkRejectSelectedTradeCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
             WindowClosed = new DelegateCommand(ExecuteWindowClosed);
@@ -139,16 +143,48 @@ namespace HurtradeBackofficeClient.ViewModels
 
         private void ExecuteCandlestickChartCommand()
         {
+            if (null == QuoteCollectionView.CurrentItem) return;
+
             string commodity = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
             ClientService.GetInstance().requestCandleStickChartData(commodity);
             CandleStickHeading = "Candle Stick Chart for " + commodity;
+        }
+
+        private void ExecuteBulkApproveSelectedTradeCommand()
+        {
+            lock (lockTrades)
+            {
+                foreach(var row in PendingTradesCollectionView)
+                {
+                    TradePosition position = row as TradePosition;
+                    if (position.IsSelected)
+                    {
+                        DealerService.GetInstance().approveRejectOrder(position.ClientName, position.OrderId, DealerService.COMMAND_VERB_APPROVE);
+                    }
+                }
+            }
+        }
+
+        private void ExecuteBulkRejectSelectedTradeCommand()
+        {
+            lock (lockTrades)
+            {
+                foreach (var row in PendingTradesCollectionView)
+                {
+                    TradePosition position = row as TradePosition;
+                    if (position.IsSelected)
+                    {
+                        DealerService.GetInstance().approveRejectOrder(position.ClientName, position.OrderId, DealerService.COMMAND_VERB_REJECT);
+                    }
+                }
+            }
         }
 
         private void ExecuteApproveSelectedTradeCommand()
         {
             lock (lockTrades)
             {
-                SharedData.poco.positions.TradePosition position = PendingTradesCollectionView.CurrentItem as SharedData.poco.positions.TradePosition;
+                TradePosition position = PendingTradesCollectionView.CurrentItem as TradePosition;
                 if(position == null)
                 {
                     //todo show error
@@ -162,7 +198,7 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             lock (lockTrades)
             {
-                SharedData.poco.positions.TradePosition position = PendingTradesCollectionView.CurrentItem as SharedData.poco.positions.TradePosition;
+                TradePosition position = PendingTradesCollectionView.CurrentItem as TradePosition;
                 if (position == null)
                 {
                     //todo show error
@@ -247,60 +283,79 @@ namespace HurtradeBackofficeClient.ViewModels
             });
         }
 
-        private void OnOfficePositionsUpdateReceived(object sender, OfficePositionsUpdateEventArgs e)
+        private void OnOfficePositionsUpdateReceived(object sender, BackofficeUpdateEventArgs e)
         {
             App.Current.Dispatcher.Invoke((Action)delegate
             {
+                QuoteList quotes = e.OfficeUpdate.Quotes;
+                Dictionary<string, List<TradePosition>> positions = e.OfficeUpdate.UserPositions;
+
+
                 lock (lockTrades)
                 {
-                    if (e.OfficePositionsUpdate.Count > 0)
+                    if (positions.Count > 0)
                     {
                         int currentIndexPending = PendingTradesCollectionView.CurrentPosition;
                         int currentIndexOpen = OpenTradesCollectionView.CurrentPosition;
+                        List<TradePosition> removeFromPending = new List<TradePosition>();
+                        List<TradePosition> removeFromOpen = new List<TradePosition>();
 
-                        foreach (var row in e.OfficePositionsUpdate)
+                        //PendingTrades.Clear();
+                        OpenTrades.Clear();
+
+
+                        foreach (var row in positions)
                         {
-                            PendingTrades.Clear();
-                            OpenTrades.Clear();
-
                             foreach (var t in row.Value)
                             {
                                 t.ClientName = row.Key;
                                 t.CurrentPl *= -1.0M;
 
-                                if (t.OrderState.Equals(SharedData.poco.positions.TradePosition.ORDER_STATE_OPEN))
+                                if (t.OrderState.Equals(TradePosition.ORDER_STATE_OPEN))
                                 {
                                     OpenTrades.Add(t);
                                 }
                                 else
                                 {
-                                    PendingTrades.Add(t);
+                                    if (!PendingTrades.Contains(t))
+                                    {
+                                        PendingTrades.Add(t);
+                                    }
                                 }
                             }
+
+                            //find all those trades which are no longer pending
+                            removeFromPending.AddRange(
+                                PendingTrades.Where(x => !row.Value.Contains(x)).ToList()
+                            );
+                            removeFromOpen.AddRange(
+                                OpenTrades.Where(x => !row.Value.Contains(x)).ToList()
+                            );
                         }
 
+                        removeFromPending.ForEach(x => PendingTrades.Remove(x));
+                        removeFromOpen.ForEach(x => OpenTrades.Remove(x));
 
                         if (PendingTradesCollectionView.Count >= currentIndexPending)
                         {
                             PendingTradesCollectionView.MoveCurrentToPosition(currentIndexPending);
                         }
-                        PendingTradesCollectionView.Refresh();
+                        
 
                         if (OpenTradesCollectionView.Count >= currentIndexOpen)
                         {
                             OpenTradesCollectionView.MoveCurrentToPosition(currentIndexOpen);
                         }
-                        OpenTradesCollectionView.Refresh();
+                        
                     }
                     else
                     {
                         OpenTrades.Clear();
                         PendingTrades.Clear();
-
-                        PendingTradesCollectionView.Refresh();
-                        OpenTradesCollectionView.Refresh();
                     }
                 }
+                PendingTradesCollectionView.Refresh();
+                OpenTradesCollectionView.Refresh();
             });
         }
 

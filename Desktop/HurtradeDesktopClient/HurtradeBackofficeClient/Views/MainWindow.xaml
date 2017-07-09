@@ -10,7 +10,7 @@
         Dialog:DialogParticipation.Register="{Binding}"              
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="Hur Trade" Height="350" Width="852.755"
+        Title="Hur Trade" Height="608" Width="1390.755"
         BorderThickness="0" 
         GlowBrush="Black"
         ResizeMode="CanResizeWithGrip"
@@ -38,30 +38,21 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition
-                Width="320px"
+                Width="420px"
                 />
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
         <StackPanel
+            Grid.Column="0"
             Grid.Row="0"
-            Grid.Column="0"
-            >
-            <Button
-                Content="abc"
-                ></Button>
-        </StackPanel>
-
-        <StackPanel
-            Grid.Column="0"
-            Grid.Row="1"
             >
             <ListView 
                 HorizontalAlignment = "Left" 
                 Height = "auto" 
                 Margin = "10,10,0,0" 
                 VerticalAlignment = "Top" 
-                Width = "320" 
+                
                 Name="QuoteList"
                 SelectionMode="Single"
                 IsSynchronizedWithCurrentItem="True"
@@ -85,6 +76,9 @@
                         <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
                   Width = "100"/>
 
+                        <GridViewColumn Header = "Date/Time" DisplayMemberBinding = "{Binding QuoteTime}" 
+                  Width = "100"/>
+
                     </GridView>
                 </ListView.View>
 
@@ -100,22 +94,257 @@
         <DockPanel
             Grid.Column="1"
             Grid.Row="0"
-            LastChildFill="True"
             >
+            <DockPanel
+                DockPanel.Dock="Top"
+                LastChildFill="True"
+                >
+                <Grid
+                    Margin="0,10,0,0"
+                    Width="100"
+                    Height="150"
+                    >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button
+                        Grid.Row="0"
+                        Grid.ColumnSpan="3"
+                        Content="Approve"
+                        Command="{Binding BulkApproveSelectedTradeCommand}"
+                        />
+
+                    <Button
+                        Grid.Row="1"
+                        Grid.ColumnSpan="3"
+                        Content="Decline"
+                        Command="{Binding BulkRejectSelectedTradeCommand}"
+                        />
+
+                    <Button
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Content="+1"/>
+
+                    <Button
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Content="+5"/>
+
+                    <Button
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        Content="+10"/>
+
+                    <Button
+                        Grid.Row="3"
+                        Grid.ColumnSpan="3"
+                        Content="Requote"/>
+
+                    <Button
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        Content="-1"/>
+
+                    <Button
+                        Grid.Row="4"
+                        Grid.Column="1"
+                        Content="-5"/>
+
+                    <Button
+                        Grid.Row="4"
+                        Grid.Column="2"
+                        Content="-10"/>
+                </Grid>
+                
+                <ListView 
+                    HorizontalAlignment = "Left" 
+                    Height = "auto" 
+                    Margin = "10,10,0,0" 
+                    VerticalAlignment = "Top" 
+                    Width = "auto" 
+                    SelectionMode="Single"
+                    IsSynchronizedWithCurrentItem="True"
+                    ItemsSource="{Binding PendingTradesCollectionView}"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                    ScrollViewer.CanContentScroll="False"
+                >
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="BorderBrush" Value="LightGray" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <!--<CheckBox IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}, Path=IsSelected}"/>-->
+                                        <CheckBox IsChecked="{Binding Path=IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
+                            <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
+                            <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
+                            <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "50"/>
+                            <GridViewColumn Header = "Current" DisplayMemberBinding = "{Binding CurrentPrice}" Width = "auto"/>
+                            <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
+                            <GridViewColumn Header = "Close" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>
+                            <GridViewColumn Header = "Requote" DisplayMemberBinding = "{Binding RequotePrice}" Width = "auto"/>
+                            <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
+                            <GridViewColumn Header = "Client" DisplayMemberBinding = "{Binding ClientName}" Width = "auto"/>
+                            <GridViewColumn Header = "Opened At" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
+                        </GridView>
+                    </ListView.View>
+
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Approve" Command="{Binding ApproveSelectedTradeCommand}"/>
+                            <MenuItem Header="Reject" Command="{Binding RejectSelectedTradeCommand}"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                </ListView>
+            </DockPanel>
+
+            <DockPanel
+                Margin="0,10,0,0"
+                DockPanel.Dock="Bottom"
+                LastChildFill="True"
+                >
+                <Grid
+                    Width="100"
+                    Height="100"
+                    >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Content="Approve"/>
+
+                    <Button
+                        Grid.Row="3"
+                        Grid.RowSpan="2"
+                        Content="Decline"/>
+
+                </Grid>
+
+                <ListView 
+                    HorizontalAlignment = "Left" 
+                    Height = "auto" 
+                    Margin = "10,10,0,0" 
+                    VerticalAlignment = "Top" 
+                    Width = "auto" 
+                    SelectionMode="Single"
+                    IsSynchronizedWithCurrentItem="True"
+                    ItemsSource="{Binding PendingTradesCollectionView}"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                    ScrollViewer.CanContentScroll="False"
+                >
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="BorderBrush" Value="LightGray" />
+                            <Setter Property="BorderThickness" Value="0,0,0,1" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}, Path=IsSelected}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
+                            <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
+                            <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
+                            <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "50"/>
+                            <GridViewColumn Header = "Current" DisplayMemberBinding = "{Binding CurrentPrice}" Width = "auto"/>
+                            <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
+                            <GridViewColumn Header = "Close" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>
+                            <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
+                            <GridViewColumn Header = "Client" DisplayMemberBinding = "{Binding ClientName}" Width = "auto"/>
+                            <GridViewColumn Header = "Opened At" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
+                        </GridView>
+                    </ListView.View>
+
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Approve" Command="{Binding ApproveSelectedTradeCommand}"/>
+                            <MenuItem Header="Reject" Command="{Binding RejectSelectedTradeCommand}"/>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                </ListView>
+            </DockPanel>
+        </DockPanel>
+
+        <GridSplitter Grid.Row="1" Grid.Column="1" Height="5" HorizontalAlignment="Stretch"/>
+
+
+        <DockPanel
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Grid.Row="2"
+            >
+
             <TabControl
                 DockPanel.Dock="Top"
                 >
-                <TabItem Header="Pending Trades">
-                    
-                        <ListView 
+                <TabItem Header="Chart">
+                    <DockPanel
+                        LastChildFill="True"
+                    >
+                        <Label 
+                            Content="{Binding CandleStickHeading}" 
+                            DockPanel.Dock="Top" 
+                            Height="50"
+                            TextBlock.FontWeight="Bold"
+                            TextBlock.FontSize="16"
+                            />
+
+                        <lvc:CartesianChart Series="{Binding CandleStickCollection}">
+                            <lvc:CartesianChart.AxisX>
+                                <lvc:Axis Labels="{Binding CandleStickXLabels}"/>
+                            </lvc:CartesianChart.AxisX>
+                        </lvc:CartesianChart>
+                    </DockPanel>
+                </TabItem>
+                <TabItem Header="Floating Status">
+                </TabItem>
+                <TabItem Header="Active Sessions"/>
+                <TabItem Header="Open Positions">
+                    <ListView 
                             HorizontalAlignment = "Left" 
-                            Height = "auto" 
                             Margin = "10,10,0,0" 
                             VerticalAlignment = "Top" 
                             Width = "auto" 
                             SelectionMode="Single"
                             IsSynchronizedWithCurrentItem="True"
-                            ItemsSource="{Binding PendingTradesCollectionView}"
+                            ItemsSource="{Binding OpenTradesCollectionView}"
                             ScrollViewer.VerticalScrollBarVisibility="Visible"
                             ScrollViewer.CanContentScroll="False"
                         >
@@ -139,75 +368,9 @@
                                 <GridViewColumn Header = "Opened At" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
                             </GridView>
                         </ListView.View>
-
-                        <ListView.ContextMenu>
-                                <ContextMenu>
-                                    <MenuItem Header="Approve" Command="{Binding ApproveSelectedTradeCommand}"/>
-                                    <MenuItem Header="Reject" Command="{Binding RejectSelectedTradeCommand}"/>
-                                </ContextMenu>
-                            </ListView.ContextMenu>
-                        </ListView>
-                    
-                </TabItem>
-                
-                <TabItem Header="Open Trades">
-                    
-                        <ListView 
-                            HorizontalAlignment = "Left" 
-                            Margin = "10,10,0,0" 
-                            VerticalAlignment = "Top" 
-                            Width = "auto" 
-                            SelectionMode="Single"
-                            IsSynchronizedWithCurrentItem="True"
-                            ItemsSource="{Binding OpenTradesCollectionView}"
-                            ScrollViewer.VerticalScrollBarVisibility="Visible"
-                            ScrollViewer.CanContentScroll="False"
-                        >
-                            <ListView.ItemContainerStyle>
-                                <Style TargetType="{x:Type ListViewItem}">
-                                    <Setter Property="BorderBrush" Value="LightGray" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                </Style>
-                            </ListView.ItemContainerStyle>
-
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
-                                    <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
-                                    <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
-                                    <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "50"/>
-                                    <GridViewColumn Header = "Requested Open Price" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
-                                    <GridViewColumn Header = "Requested Close Price" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>
-                                    <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
-                                    <GridViewColumn Header = "Client" DisplayMemberBinding = "{Binding ClientName}" Width = "auto"/>
-                                    <GridViewColumn Header = "Opened At" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
-                            </GridView>
-                            </ListView.View>
-                        </ListView>
-                    
+                    </ListView>
                 </TabItem>
             </TabControl>
-        </DockPanel>
-
-        <GridSplitter Grid.Row="1" Grid.Column="1" Height="5" HorizontalAlignment="Stretch"/>
-
-        <DockPanel
-            Grid.Column="1"
-            Grid.Row="2"
-            >
-            <Label 
-                Content="{Binding CandleStickHeading}" 
-                DockPanel.Dock="Top" 
-                Height="50"
-                TextBlock.FontWeight="Bold"
-                TextBlock.FontSize="16"
-                />
-
-            <lvc:CartesianChart Series="{Binding CandleStickCollection}">
-                <lvc:CartesianChart.AxisX>
-                    <lvc:Axis Labels="{Binding CandleStickXLabels}"/>
-                </lvc:CartesianChart.AxisX>
-            </lvc:CartesianChart>
         </DockPanel>
 
     </Grid>

@@ -9,11 +9,12 @@ using System.Text;
 using SharedData.poco.trade;
 using SharedData.poco.updates;
 using BackofficeSharedData.poco.updates;
+using SharedData.poco.positions;
 
 namespace BackofficeSharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
-    public delegate void OfficePositionsUpdateReceivedHandler(object sender, OfficePositionsUpdateEventArgs e);
+    public delegate void OfficePositionsUpdateReceivedHandler(object sender, BackofficeUpdateEventArgs e);
 
     public class DealerService
     {
@@ -122,13 +123,30 @@ namespace BackofficeSharedData.Services
                 _channel.BasicAck(e.DeliveryTag, false);
                 
                 if (messageType.Equals("officePositions")) {
-                    OfficePositionsUpdate update = JsonConvert.DeserializeObject<OfficePositionsUpdate>(ASCIIEncoding.UTF8.GetString(body));
+                    BackofficeUpdate update = JsonConvert.DeserializeObject<BackofficeUpdate>(ASCIIEncoding.UTF8.GetString(body));
 
                     Task.Factory.StartNew(() =>
                     {
                         try
                         {
-                            OnOfficePositionsUpdateReceived(this, new OfficePositionsUpdateEventArgs(update));
+
+                            //fill in the current price against each of the positions
+                            foreach (var u in update.UserPositions)
+                            {
+                                foreach (var position in u.Value)
+                                {
+                                    if (position.OrderType.Equals(TradePosition.ORDER_TYPE_BUY))
+                                    {
+                                        position.CurrentPrice = (update.Quotes.ContainsKey(position.Commodity)) ? update.Quotes[position.Commodity].Bid : decimal.Zero;
+                                    }
+                                    else
+                                    {
+                                        position.CurrentPrice = (update.Quotes.ContainsKey(position.Commodity)) ? update.Quotes[position.Commodity].Ask : decimal.Zero;
+                                    }
+                                }
+                            }
+
+                            OnOfficePositionsUpdateReceived(this, new BackofficeUpdateEventArgs(update));
                         }catch(Exception ex)
                         {
                             log.Error(ex);

@@ -50,8 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="poco\updates\OfficePositionsUpdate.cs" />
-    <Compile Include="poco\updates\OfficePositionsUpdateEventArgs.cs" />
+    <Compile Include="poco\updates\BackofficeUpdate.cs" />
+    <Compile Include="poco\updates\BackofficeUpdateEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\DealerService.cs" />
   </ItemGroup>

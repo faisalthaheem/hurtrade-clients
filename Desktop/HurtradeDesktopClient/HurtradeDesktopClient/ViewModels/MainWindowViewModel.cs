@@ -196,6 +196,8 @@ namespace HurtradeDesktopClient.ViewModels
 
         private void ExecuteCandlestickChartCommand()
         {
+            if (null == QuoteCollectionView.CurrentItem) return;
+
             string commodity = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
             ClientService.GetInstance().requestCandleStickChartData(commodity);
             CandleStickHeading = "Candle Stick Chart for " + commodity;

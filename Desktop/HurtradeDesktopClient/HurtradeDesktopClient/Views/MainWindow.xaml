@@ -39,7 +39,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition
-                Width="320px"
+                Width="420px"
                 />
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -135,7 +135,7 @@
                 DockPanel.Dock="Top"
                 Margin = "10,10,0,0" 
                 VerticalAlignment = "Top" 
-                Width = "320" 
+                Width = "420px" 
                 Name="QuoteList"
                 SelectionMode="Single"
                 IsSynchronizedWithCurrentItem="True"
@@ -159,6 +159,9 @@
                   Width = "100"/>
 
                             <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
+                  Width = "100"/>
+
+                            <GridViewColumn Header = "Date/Time" DisplayMemberBinding = "{Binding QuoteTime}" 
                   Width = "100"/>
 
                         </GridView>
