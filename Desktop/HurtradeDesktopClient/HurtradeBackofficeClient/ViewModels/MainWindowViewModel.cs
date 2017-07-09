@@ -17,6 +17,11 @@ using SharedData.Services;
 using BackofficeSharedData.Services;
 using BackofficeSharedData.poco.updates;
 using System.Linq;
+using LiveCharts;
+using LiveCharts.Wpf;
+using LiveCharts.Defaults;
+using System.Collections.Generic;
+using SharedData.events;
 
 namespace HurtradeBackofficeClient.ViewModels
 {
@@ -25,10 +30,12 @@ namespace HurtradeBackofficeClient.ViewModels
         #region Commands
         public DelegateCommand TradeBuyCommand { get; private set; }
         public DelegateCommand TradeSellCommand { get; private set; }
+        public DelegateCommand CandlestickChartCommand { get; private set; }
         public DelegateCommand ApproveSelectedTradeCommand { get; private set; }
         public DelegateCommand RejectSelectedTradeCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
+        public DelegateCommand WindowClosed { get; private set; }
         #endregion
 
         #region Properties
@@ -65,6 +72,47 @@ namespace HurtradeBackofficeClient.ViewModels
         private Object lockTrades = new Object();
         #endregion
 
+        #region properties
+        private string[] _candleStickXLabels = null;
+        public string[] CandleStickXLabels
+        {
+            get
+            {
+                return _candleStickXLabels;
+            }
+            set
+            {
+                SetProperty(ref _candleStickXLabels, value);
+            }
+        }
+
+        private string _CandleStickHeading;
+        public string CandleStickHeading
+        {
+            get
+            {
+                return _CandleStickHeading;
+            }
+            set
+            {
+                SetProperty(ref _CandleStickHeading, value);
+            }
+        }
+
+        public SeriesCollection _candleStickCollection = null;
+        public SeriesCollection CandleStickCollection
+        {
+            get
+            {
+                return _candleStickCollection;
+            }
+            set
+            {
+                SetProperty(ref _candleStickCollection, value);
+            }
+        }
+        #endregion
+
 
         public MainWindowViewModel(MetroWindow mainWindow,IDialogCoordinator dialogCoordinator)
         {
@@ -81,10 +129,19 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
             TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            CandlestickChartCommand = new DelegateCommand(ExecuteCandlestickChartCommand);
             ApproveSelectedTradeCommand = new DelegateCommand(ExecuteApproveSelectedTradeCommand);
             RejectSelectedTradeCommand = new DelegateCommand(ExecuteRejectSelectedTradeCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
+            WindowClosed = new DelegateCommand(ExecuteWindowClosed);
+        }
+
+        private void ExecuteCandlestickChartCommand()
+        {
+            string commodity = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
+            ClientService.GetInstance().requestCandleStickChartData(commodity);
+            CandleStickHeading = "Candle Stick Chart for " + commodity;
         }
 
         private void ExecuteApproveSelectedTradeCommand()
@@ -119,13 +176,22 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             ClientService.GetInstance().OnUpdateReceived -= OnUpdateReceived;
             DealerService.GetInstance().OnOfficePositionsUpdateReceived -= OnOfficePositionsUpdateReceived;
+            ClientService.GetInstance().OnCandleStickDataEventHandler -= MainWindowViewModel_OnCandleStickDataEventHandler;
+
+        }
+
+        private void ExecuteWindowClosed()
+        {
+            Environment.Exit(0);
         }
 
         private async void ExecuteWindowLoaded()
         {
             ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
             DealerService.GetInstance().OnOfficePositionsUpdateReceived += OnOfficePositionsUpdateReceived;
-            
+            ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
+
+
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
             LoginDialogData creds = await _dialogCoord.ShowLoginAsync(this, "Backoffice Login", "Login to continue using your account");
@@ -158,6 +224,27 @@ namespace HurtradeBackofficeClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnCandleStickDataEventHandler(object sender, CandleStickDataEventArgs e)
+        {
+            //CandleStickCollection
+
+            List<string> xLabels = new List<string>(e.Data.Count);
+            ChartValues<OhlcPoint> candles = new ChartValues<OhlcPoint>();
+            e.Data.Reverse();
+
+            foreach (var cs in e.Data)
+            {
+                candles.Add(new OhlcPoint(cs.Open, cs.Highest, cs.Lowest, cs.Close));
+                xLabels.Add(cs.SampleFor.ToShortDateString() + " " + cs.SampleFor.ToShortTimeString());
+            }
+
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                CandleStickCollection = new SeriesCollection { new CandleSeries { Values = candles } };
+                CandleStickXLabels = xLabels.ToArray();
+            });
         }
 
         private void OnOfficePositionsUpdateReceived(object sender, OfficePositionsUpdateEventArgs e)

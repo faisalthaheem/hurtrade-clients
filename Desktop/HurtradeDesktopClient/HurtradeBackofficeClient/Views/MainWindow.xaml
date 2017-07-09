@@ -8,7 +8,7 @@
         xmlns:prism="http://prismlibrary.com/"
         xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
         Dialog:DialogParticipation.Register="{Binding}"              
-        
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
         Title="Hur Trade" Height="350" Width="852.755"
         BorderThickness="0" 
@@ -25,6 +25,9 @@
         </intr:EventTrigger>
         <intr:EventTrigger EventName="Closing">
             <intr:InvokeCommandAction Command="{Binding WindowClosing}"/>
+        </intr:EventTrigger>
+        <intr:EventTrigger EventName="Closed">
+            <intr:InvokeCommandAction Command="{Binding WindowClosed}"/>
         </intr:EventTrigger>
     </intr:Interaction.Triggers>
 
@@ -84,6 +87,12 @@
 
                     </GridView>
                 </ListView.View>
+
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Candle Stick Chart" Command="{Binding CandlestickChartCommand}"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
 
             </ListView>
         </StackPanel>
@@ -178,6 +187,27 @@
                     
                 </TabItem>
             </TabControl>
+        </DockPanel>
+
+        <GridSplitter Grid.Row="1" Grid.Column="1" Height="5" HorizontalAlignment="Stretch"/>
+
+        <DockPanel
+            Grid.Column="1"
+            Grid.Row="2"
+            >
+            <Label 
+                Content="{Binding CandleStickHeading}" 
+                DockPanel.Dock="Top" 
+                Height="50"
+                TextBlock.FontWeight="Bold"
+                TextBlock.FontSize="16"
+                />
+
+            <lvc:CartesianChart Series="{Binding CandleStickCollection}">
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis Labels="{Binding CandleStickXLabels}"/>
+                </lvc:CartesianChart.AxisX>
+            </lvc:CartesianChart>
         </DockPanel>
 
     </Grid>
