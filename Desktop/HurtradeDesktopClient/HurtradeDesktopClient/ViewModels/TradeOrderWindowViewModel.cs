@@ -21,7 +21,8 @@ namespace HurtradeDesktopClient.ViewModels
     {
 
         #region Commands
-        public DelegateCommand ExecuteTrade { get; private set; }
+        public DelegateCommand ExecuteTradeBuy { get; private set; }
+        public DelegateCommand ExecuteTradeSell { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         #endregion
@@ -60,13 +61,6 @@ namespace HurtradeDesktopClient.ViewModels
             }
         }
 
-        private string _TradeButtonText;
-        public string TradeButtonText
-        {
-            get { return _TradeButtonText; }
-            set { SetProperty(ref _TradeButtonText, value); }
-        }
-
         private string _CurrentPrice;
         public string CurrentPrice
         {
@@ -101,7 +95,8 @@ namespace HurtradeDesktopClient.ViewModels
 
         private void SetupCommands()
         {
-            ExecuteTrade = new DelegateCommand(ExecuteTradeCommand);
+            ExecuteTradeBuy = new DelegateCommand(ExecuteTradeCommandBuy);
+            ExecuteTradeSell = new DelegateCommand(ExecuteTradeCommandSell);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
         }
@@ -114,8 +109,7 @@ namespace HurtradeDesktopClient.ViewModels
         private void ExecuteWindowLoaded()
         {
             ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
-            TradeButtonText = (IsBuy ? "Buy " : "Sell ");
-            WindowTitle = TradeButtonText + TradingSymbol;
+            WindowTitle = TradingSymbol;
         }
 
         private void OnUpdateReceived(object sender, SharedData.poco.updates.ClientUpdateEventArgs e)
@@ -125,19 +119,12 @@ namespace HurtradeDesktopClient.ViewModels
                 if (e.ClientQuotes.ContainsKey(TradingSymbol))
                 {
                     SharedData.poco.Quote quote = e.ClientQuotes[TradingSymbol];
-                    if (IsBuy)
-                    {
-                        CurrentPrice = "" + quote.Ask;
-                    }
-                    else
-                    {
-                        CurrentPrice = "" + quote.Bid;
-                    }
+                    CurrentPrice = string.Format("{0}/{1}", quote.Bid, quote.Ask);
                 }
             });
         }
 
-        private void ExecuteTradeCommand()
+        private void ExecuteTradeCommandBuy()
         {
             if (string.IsNullOrEmpty(LotSize)) { return; }
             if(string.IsNullOrWhiteSpace(LotSize)) { return; }
@@ -145,6 +132,20 @@ namespace HurtradeDesktopClient.ViewModels
             decimal lotSize = 0;
             if (decimal.TryParse(LotSize, out lotSize))
             {
+                IsBuy = true;
+                OnTradeExecuted?.Invoke(this);
+            }
+        }
+
+        private void ExecuteTradeCommandSell ()
+        {
+            if (string.IsNullOrEmpty(LotSize)) { return; }
+            if (string.IsNullOrWhiteSpace(LotSize)) { return; }
+
+            decimal lotSize = 0;
+            if (decimal.TryParse(LotSize, out lotSize))
+            {
+                IsBuy = false;
                 OnTradeExecuted?.Invoke(this);
             }
         }

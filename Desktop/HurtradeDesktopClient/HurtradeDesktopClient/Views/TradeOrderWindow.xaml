@@ -64,7 +64,7 @@
         <TextBlock
             Grid.Row="1"
             Grid.Column="0"
-            Text="Current Price"
+            Text="Current Bid/Ask"
             Margin="5"
             />
         <TextBlock
@@ -87,9 +87,16 @@
             />
         <Button
             Grid.Row="3"
-            Grid.ColumnSpan="2"
-            Content="{Binding TradeButtonText}"
-            Command="{Binding ExecuteTrade}"
+            Grid.Column="0"
+            Content="Buy"
+            Command="{Binding ExecuteTradeBuy}"
+            Margin="5"
+            />
+        <Button
+            Grid.Row="3"
+            Grid.Column="1"
+            Content="Sell"
+            Command="{Binding ExecuteTradeSell}"
             Margin="5"
             />
     </Grid>

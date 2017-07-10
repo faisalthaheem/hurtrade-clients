@@ -297,12 +297,9 @@ namespace HurtradeBackofficeClient.ViewModels
                     {
                         int currentIndexPending = PendingTradesCollectionView.CurrentPosition;
                         int currentIndexOpen = OpenTradesCollectionView.CurrentPosition;
-                        List<TradePosition> removeFromPending = new List<TradePosition>();
-                        List<TradePosition> removeFromOpen = new List<TradePosition>();
-
-                        //PendingTrades.Clear();
+                        List<TradePosition> pendingWithSelectionPreserved = new List<TradePosition>();
+                        
                         OpenTrades.Clear();
-
 
                         foreach (var row in positions)
                         {
@@ -319,22 +316,20 @@ namespace HurtradeBackofficeClient.ViewModels
                                 {
                                     if (!PendingTrades.Contains(t))
                                     {
-                                        PendingTrades.Add(t);
+                                        pendingWithSelectionPreserved.Add(t);
+                                    }
+                                    else
+                                    {
+                                        t.IsSelected = PendingTrades.First(x => x.Equals(t)).IsSelected;
+                                        pendingWithSelectionPreserved.Add(t);
                                     }
                                 }
                             }
-
-                            //find all those trades which are no longer pending
-                            removeFromPending.AddRange(
-                                PendingTrades.Where(x => !row.Value.Contains(x)).ToList()
-                            );
-                            removeFromOpen.AddRange(
-                                OpenTrades.Where(x => !row.Value.Contains(x)).ToList()
-                            );
                         }
 
-                        removeFromPending.ForEach(x => PendingTrades.Remove(x));
-                        removeFromOpen.ForEach(x => OpenTrades.Remove(x));
+                        PendingTrades.Clear();
+                        PendingTrades.AddRange(pendingWithSelectionPreserved);
+                        
 
                         if (PendingTradesCollectionView.Count >= currentIndexPending)
                         {

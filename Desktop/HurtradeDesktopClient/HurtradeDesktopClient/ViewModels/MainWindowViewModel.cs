@@ -25,8 +25,7 @@ namespace HurtradeDesktopClient.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         #region Commands
-        public DelegateCommand TradeBuyCommand { get; private set; }
-        public DelegateCommand TradeSellCommand { get; private set; }
+        public DelegateCommand TradeCommand { get; private set; }
         public DelegateCommand CandlestickChartCommand { get; private set; }
         public DelegateCommand TradeCloseCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
@@ -185,8 +184,7 @@ namespace HurtradeDesktopClient.ViewModels
 
         private void SetupCommands()
         {
-            TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
-            TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            TradeCommand = new DelegateCommand(ExecuteTradeCommand);
             CandlestickChartCommand = new DelegateCommand(ExecuteCandlestickChartCommand);
             TradeCloseCommand = new DelegateCommand(ExecuteTradeCloseCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
@@ -383,7 +381,7 @@ namespace HurtradeDesktopClient.ViewModels
             }
         }
         
-        private async void ExecuteTradeCommand(bool isBuy)
+        private async void ExecuteTradeCommand()
         {
 
             TradeOrderWindow tow = new TradeOrderWindow();
@@ -391,21 +389,13 @@ namespace HurtradeDesktopClient.ViewModels
             towContext.View = tow;
             towContext.OnTradeExecuted += TowContext_OnTradeExecuted;
 
+            var quote = QuoteCollectionView.CurrentItem as SharedData.poco.Quote;
+            if (null == quote) { return; }
+            towContext.TradingSymbol = quote.Name;
 
-            towContext.IsBuy = isBuy;
-            towContext.TradingSymbol = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
-
-            await ChildWindowManager.ShowChildWindowAsync(_mainWindow, tow, ChildWindowManager.OverlayFillBehavior.FullWindow);
+            await ChildWindowManager.ShowChildWindowAsync(_mainWindow, tow, ChildWindowManager.OverlayFillBehavior.WindowContent);
         }
-
-        private void ExecuteTradeSellCommand()
-        {
-            ExecuteTradeCommand(false);
-        }
-        private void ExecuteTradeBuyCommand()
-        {
-            ExecuteTradeCommand(true);
-        }
+        
 
         private void TowContext_OnTradeExecuted(TradeOrderWindowViewModel context)
         {
