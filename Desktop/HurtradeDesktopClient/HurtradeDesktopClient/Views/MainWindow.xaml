@@ -170,7 +170,7 @@
 
                     <ListView.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="New Trade" Command="{Binding TradeBuyCommand}"/>
+                            <MenuItem Header="New Trade" Command="{Binding TradeCommand}"/>
                             <MenuItem Header="Candlestick Chart" Command="{Binding CandlestickChartCommand}"/>
                         </ContextMenu>
                     </ListView.ContextMenu>

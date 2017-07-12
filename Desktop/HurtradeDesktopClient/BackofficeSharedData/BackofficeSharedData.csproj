@@ -51,7 +51,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="poco\updates\BackofficeUpdate.cs" />
-    <Compile Include="poco\updates\BackofficeUpdateEventArgs.cs" />
+    <Compile Include="events\BackofficeUpdateEventArgs.cs" />
+    <Compile Include="poco\updates\CoverAccount.cs" />
+    <Compile Include="poco\updates\CoverPosition.cs" />
+    <Compile Include="poco\updates\OfficeFloatingStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\DealerService.cs" />
   </ItemGroup>

@@ -165,6 +165,7 @@ namespace BackofficeSharedData.Services
             GenericRequestResponseDictionary request = new GenericRequestResponseDictionary();
             request["client"] = clientUsername;
             request["orderId"] = orderid.ToString();
+            request["command"] = commandVerb;
 
             lock (lockChannel)
             {
@@ -172,7 +173,7 @@ namespace BackofficeSharedData.Services
                 {
                     IBasicProperties props = _channel.CreateBasicProperties();
                     props.UserId = _username;
-                    props.Type = commandVerb;
+                    props.Type = "client"; //as we want server to process a client's positions
 
                     _channel.BasicPublish(
                         officeExchangeName,
