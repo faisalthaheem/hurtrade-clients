@@ -84,7 +84,7 @@
 
                 <ListView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Candle Stick Chart" Command="{Binding CandlestickChartCommand}"/>
+                        <MenuItem Header="Candlestick Chart" Command="{Binding CandlestickChartCommand}"/>
                     </ContextMenu>
                 </ListView.ContextMenu>
 
@@ -334,6 +334,43 @@
                     </DockPanel>
                 </TabItem>
                 <TabItem Header="Floating Status">
+
+                    <ListView 
+                            HorizontalAlignment = "Left" 
+                            Margin = "10,10,0,0" 
+                            VerticalAlignment = "Top" 
+                            Width = "auto" 
+                            SelectionMode="Single"
+                            IsSynchronizedWithCurrentItem="True"
+                            ItemsSource="{Binding FloatingStatusCollectionView}"
+                            ScrollViewer.VerticalScrollBarVisibility="Visible"
+                            ScrollViewer.CanContentScroll="False"
+                        >
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Setter Property="BorderBrush" Value="LightGray" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header = "Commodity" DisplayMemberBinding = "{Binding Commodity}" Width = "auto"/>
+                                <GridViewColumn Header = "Buy Deals" DisplayMemberBinding = "{Binding BuyDeals}" Width = "auto"/>
+                                <GridViewColumn Header = "Buy Amt" DisplayMemberBinding = "{Binding BuyAmt}" Width = "auto"/>
+                                <GridViewColumn Header = "Buy Avg" DisplayMemberBinding = "{Binding BuyAvg}" Width = "auto"/>
+                                <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" Width = "auto"/>
+                                <GridViewColumn Header = "Sell Deals" DisplayMemberBinding = "{Binding SellDeals}" Width = "auto"/>
+                                <GridViewColumn Header = "Sell Amt" DisplayMemberBinding = "{Binding SellAmt}" Width = "auto"/>
+                                <GridViewColumn Header = "Sell Avg" DisplayMemberBinding = "{Binding SellAvg}" Width = "auto"/>
+                                <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" Width = "auto"/>
+                                <GridViewColumn Header = "Net Amt" DisplayMemberBinding = "{Binding NetAmt}" Width = "auto"/>
+                                <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding Pl}" Width = "auto"/>
+                                <GridViewColumn Header = "Net P/L" DisplayMemberBinding = "{Binding Netpl}" Width = "auto"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
                 </TabItem>
                 <TabItem Header="Active Sessions"/>
                 <TabItem Header="Open Positions">
@@ -368,6 +405,49 @@
                                 <GridViewColumn Header = "Opened At" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
                             </GridView>
                         </ListView.View>
+                    </ListView>
+                </TabItem>
+
+                <TabItem Header="Open Cover Positions">
+                    <ListView 
+                            HorizontalAlignment = "Left" 
+                            Margin = "10,10,0,0" 
+                            VerticalAlignment = "Top" 
+                            Width = "auto" 
+                            SelectionMode="Single"
+                            IsSynchronizedWithCurrentItem="True"
+                            ItemsSource="{Binding OpenCoverTradesCollectionView}"
+                            ScrollViewer.VerticalScrollBarVisibility="Visible"
+                            ScrollViewer.CanContentScroll="False"
+                        >
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Setter Property="BorderBrush" Value="LightGray" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header = "Id" DisplayMemberBinding = "{Binding Remoteid}" Width = "100"/>
+                                <GridViewColumn Header = "Commodity" DisplayMemberBinding = "{Binding Commodity}" Width = "auto"/>
+                                <GridViewColumn Header = "Type" DisplayMemberBinding = "{Binding OrderType}" Width = "50"/>
+                                <GridViewColumn Header = "Amount" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
+                                <GridViewColumn Header = "Open Price" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
+                                <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPL}" Width = "auto"/>
+                                <GridViewColumn Header = "Open Time" DisplayMemberBinding = "{Binding Opentime}" Width = "auto"/>
+                                <GridViewColumn Header = "Opened by" DisplayMemberBinding = "{Binding OpenedBy}" Width = "auto"/>
+                                <GridViewColumn Header = "Account" DisplayMemberBinding = "{Binding CoverAccountTitle}" Width = "auto"/>
+                            </GridView>
+                        </ListView.View>
+
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="New Cover Position" Command="{Binding NewCoverPositionCommand}"/>
+                                <MenuItem Header="Edit Selected Cover Position" Command="{Binding EditSelectedCoverPositionCommand}"/>
+                                <MenuItem Header="Close Selected Cover Position" Command="{Binding CloseSelectedCoverPositionCommand}"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
                     </ListView>
                 </TabItem>
             </TabControl>

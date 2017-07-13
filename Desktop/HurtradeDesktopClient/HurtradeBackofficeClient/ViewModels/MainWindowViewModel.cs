@@ -28,13 +28,17 @@ namespace HurtradeBackofficeClient.ViewModels
     public class MainWindowViewModel : BindableBase
     {
         #region Commands
-        public DelegateCommand TradeBuyCommand { get; private set; }
-        public DelegateCommand TradeSellCommand { get; private set; }
+        
         public DelegateCommand CandlestickChartCommand { get; private set; }
         public DelegateCommand ApproveSelectedTradeCommand { get; private set; }
         public DelegateCommand RejectSelectedTradeCommand { get; private set; }
         public DelegateCommand BulkApproveSelectedTradeCommand { get; private set; }
         public DelegateCommand BulkRejectSelectedTradeCommand { get; private set; }
+
+        public DelegateCommand NewCoverPositionCommand { get; private set; }
+        public DelegateCommand EditSelectedCoverPositionCommand { get; private set; }
+        public DelegateCommand CloseSelectedCoverPositionCommand { get; private set; }
+
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         public DelegateCommand WindowClosed { get; private set; }
@@ -44,11 +48,17 @@ namespace HurtradeBackofficeClient.ViewModels
         public ObservableCollection<Quote> Quotes = new ObservableCollection<Quote>();
         public ListCollectionView QuoteCollectionView { get; private set; }
 
-        public ObservableCollection<SharedData.poco.positions.TradePosition> PendingTrades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
+        public ObservableCollection<TradePosition> PendingTrades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
         public ListCollectionView PendingTradesCollectionView { get; private set; }
 
-        public ObservableCollection<SharedData.poco.positions.TradePosition> OpenTrades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
+        public ObservableCollection<TradePosition> OpenTrades = new ObservableCollection<SharedData.poco.positions.TradePosition>();
         public ListCollectionView OpenTradesCollectionView { get; private set; }
+
+        public ObservableCollection<OfficeFloatingStatus> _floatingStatus = new ObservableCollection<OfficeFloatingStatus>();
+        public ListCollectionView FloatingStatusCollectionView { get; private set; }
+
+        public ObservableCollection<CoverPosition> _coverPositions = new ObservableCollection<CoverPosition>();
+        public ListCollectionView OpenCoverTradesCollectionView { get; private set; }
         #endregion
 
 
@@ -121,6 +131,9 @@ namespace HurtradeBackofficeClient.ViewModels
             PendingTradesCollectionView = new ListCollectionView(PendingTrades);
             OpenTradesCollectionView = new ListCollectionView(OpenTrades);
             QuoteCollectionView = new ListCollectionView(Quotes);
+            FloatingStatusCollectionView = new ListCollectionView(_floatingStatus);
+            OpenCoverTradesCollectionView = new ListCollectionView(_coverPositions);
+
             _mainWindow = mainWindow;
            _dialogCoord = dialogCoordinator;
 
@@ -129,8 +142,10 @@ namespace HurtradeBackofficeClient.ViewModels
 
         private void SetupCommands()
         {
-            TradeBuyCommand = new DelegateCommand(ExecuteTradeBuyCommand);
-            TradeSellCommand = new DelegateCommand(ExecuteTradeSellCommand);
+            NewCoverPositionCommand = new DelegateCommand(ExecuteNewCoverPositionCommand);
+            EditSelectedCoverPositionCommand = new DelegateCommand(ExecuteEditSelectedCoverPositionCommand);
+            CloseSelectedCoverPositionCommand = new DelegateCommand(ExecuteCloseSelectedCoverPositionCommand);
+
             CandlestickChartCommand = new DelegateCommand(ExecuteCandlestickChartCommand);
             ApproveSelectedTradeCommand = new DelegateCommand(ExecuteApproveSelectedTradeCommand);
             RejectSelectedTradeCommand = new DelegateCommand(ExecuteRejectSelectedTradeCommand);
@@ -147,7 +162,7 @@ namespace HurtradeBackofficeClient.ViewModels
 
             string commodity = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
             ClientService.GetInstance().requestCandleStickChartData(commodity);
-            CandleStickHeading = "Candle Stick Chart for " + commodity;
+            CandleStickHeading = "Candlestick Chart for " + commodity;
         }
 
         private void ExecuteBulkApproveSelectedTradeCommand()
@@ -289,10 +304,35 @@ namespace HurtradeBackofficeClient.ViewModels
             {
                 QuoteList quotes = e.OfficeUpdate.Quotes;
                 Dictionary<string, List<TradePosition>> positions = e.OfficeUpdate.UserPositions;
-
+                List<OfficeFloatingStatus> floatingStatus = e.OfficeUpdate.FloatingStatus;
 
                 lock (lockTrades)
                 {
+                    _floatingStatus.Clear();
+                    if (floatingStatus.Count > 0)
+                    {
+                        _floatingStatus.AddRange(floatingStatus);
+                        FloatingStatusCollectionView.Refresh();
+                    }
+
+                    if(e.OfficeUpdate.CoverPositions.Count > 0)
+                    {
+                        int selIndex = OpenCoverTradesCollectionView.CurrentPosition;
+                        _coverPositions.Clear();
+
+                        _coverPositions.AddRange(e.OfficeUpdate.CoverPositions);
+
+                        if(_coverPositions.Count >= selIndex)
+                        {
+                            OpenCoverTradesCollectionView.MoveCurrentToPosition(selIndex);
+                        }
+                    }
+                    else
+                    {
+                        _coverPositions.Clear();
+                    }
+                    
+
                     if (positions.Count > 0)
                     {
                         int currentIndexPending = PendingTradesCollectionView.CurrentPosition;
@@ -399,19 +439,101 @@ namespace HurtradeBackofficeClient.ViewModels
                   });
         }
         
-        private async void ExecuteTradeCommand(bool isBuy)
+
+        private async void ExecuteNewCoverPositionCommand()
         {
-            //await ChildWindowManager.ShowChildWindowAsync(_mainWindow, tow, ChildWindowManager.OverlayFillBehavior.FullWindow);
+            CoverPositionWindow cpw = new CoverPositionWindow();
+            CoverPositionWindowViewModel cpwContext = cpw.DataContext as CoverPositionWindowViewModel;
+            cpwContext.View = cpw;
+            cpwContext.OnTradeExecuted += CpwContext_OnTradeExecuted;
+
+            lock (lockQuotes)
+            {
+                cpwContext._commodities.AddRange(Quotes.Select(x => x.Name).ToList());
+            }
+            if (cpwContext._commodities.Count > 0)
+            {
+                cpwContext.SelectedCommodity = cpwContext._commodities[0];
+                cpwContext.CommoditiesCollection.Refresh();
+            }
+
+            await ChildWindowManager.ShowChildWindowAsync(_mainWindow, cpw, ChildWindowManager.OverlayFillBehavior.WindowContent);
         }
 
-        private void ExecuteTradeSellCommand()
+        private async void ExecuteEditSelectedCoverPositionCommand()
         {
-            ExecuteTradeCommand(false);
+            CoverPositionWindow cpw = new CoverPositionWindow();
+            CoverPositionWindowViewModel cpwContext = cpw.DataContext as CoverPositionWindowViewModel;
+            cpwContext.View = cpw;
+            cpwContext.OnTradeExecuted += CpwContext_OnTradeExecuted;
+
+            lock (lockQuotes)
+            {
+                cpwContext._commodities.AddRange(Quotes.Select(x => x.Name).ToList());
+            }
+            if (cpwContext._commodities.Count > 0)
+            {
+                cpwContext.SelectedCommodity = cpwContext._commodities[0];
+                cpwContext.CommoditiesCollection.Refresh();
+            }
+
+            var position = OpenCoverTradesCollectionView.CurrentItem as CoverPosition;
+            if (null == position)
+            {
+                return;
+            }
+            cpwContext.CoverPosition = position;
+
+            cpwContext.SelectedCommodity = position.Commodity;
+            cpwContext.SelectedCoveringAccount = position.Coveraccount_id;
+            cpwContext.SelectedOrderType = position.OrderType;
+            cpwContext.LotSize = position.Amount;
+            cpwContext.OpenPrice = position.OpenPrice;
+            cpwContext.Orderid = position.Remoteid;
+
+            await ChildWindowManager.ShowChildWindowAsync(_mainWindow, cpw, ChildWindowManager.OverlayFillBehavior.WindowContent);
         }
-        private void ExecuteTradeBuyCommand()
+
+        private void ExecuteCloseSelectedCoverPositionCommand()
         {
-            ExecuteTradeCommand(true);
+            if (null == OpenCoverTradesCollectionView.CurrentItem) return;
+
+            CoverPosition position = OpenCoverTradesCollectionView.CurrentItem as CoverPosition;
+            position.ClosedBy = username;
+
+            DealerService.GetInstance().saveUpdateCloseCoverPosition(position, "closeCoverPosition");
         }
+
+        private void CpwContext_OnTradeExecuted(CoverPositionWindowViewModel context)
+        {
+            context.View.Close();
+
+
+            if (context.IsCancel)
+            {
+                return;
+            }
+
+            var position = context.CoverPosition;
+            if (null == position)
+            {
+                position = new CoverPosition();
+            }
+
+            position.Amount = context.LotSize;
+            position.Coveraccount_id = context.SelectedCoveringAccount;
+            position.OrderType = context.SelectedOrderType;
+            position.OpenPrice = context.OpenPrice;
+            //position.Opentime = DateTime.Now; //do not set
+            position.OpenedBy = username;
+            position.Commodity = context.SelectedCommodity;
+            //position.Internalid = Guid.NewGuid(); //will be regenerated at server end..
+            position.Remoteid = context.Orderid;
+
+            DealerService.GetInstance().saveUpdateCloseCoverPosition(position, "createUpdateCoverPosition");
+
+        }
+
 
         
     }

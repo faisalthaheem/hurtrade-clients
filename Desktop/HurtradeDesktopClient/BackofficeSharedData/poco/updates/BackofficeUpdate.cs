@@ -14,10 +14,12 @@ namespace BackofficeSharedData.poco.updates
         private QuoteList quotes;
         private List<CoverAccount> coverAccounts;
         private List<CoverPosition> coverPositions;
+        private List<OfficeFloatingStatus> floatingStatus;
 
         public Dictionary<string, List<TradePosition>> UserPositions { get => userPositions; set => userPositions = value; }
         public QuoteList Quotes { get => quotes; set => quotes = value; }
         public List<CoverAccount> CoverAccounts { get => coverAccounts; set => coverAccounts = value; }
         public List<CoverPosition> CoverPositions { get => coverPositions; set => coverPositions = value; }
+        public List<OfficeFloatingStatus> FloatingStatus { get => floatingStatus; set => floatingStatus = value; }
     }
 }

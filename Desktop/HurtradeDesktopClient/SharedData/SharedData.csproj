@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="events\CandleStickDataEventArgs.cs" />
     <Compile Include="events\GenericResponseEventArgs.cs" />
+    <Compile Include="misc\Utils.cs" />
     <Compile Include="poco\charting\CandleStick.cs" />
     <Compile Include="poco\GenericRequestResponseDictionary.cs" />
     <Compile Include="poco\positions\TradePosition.cs" />

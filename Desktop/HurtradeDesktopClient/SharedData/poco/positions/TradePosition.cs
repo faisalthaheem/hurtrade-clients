@@ -46,6 +46,17 @@ namespace SharedData.poco.positions
         private DateTime approvedopenat;
         private DateTime approvedcloseat;
 
+        //these are locally used
+        private decimal sumPlBuy;
+        private decimal sumBuyAmt;
+        private decimal sumBuyPrice;
+        private int buysIn;
+
+        private decimal sumPlSell;
+        private decimal sumSellAmt;
+        private decimal sumSellPrice;
+        private int sellsIn;
+
 
         public string OrderType { get => orderType; set => orderType = value; }
         public string Commodity { get => commodity; set => commodity = value; }
@@ -63,6 +74,15 @@ namespace SharedData.poco.positions
         public decimal ClosePrice { get => closePrice; set => closePrice = value; }
         public decimal CurrentPrice { get => currentPrice; set => currentPrice = value; }
         public bool IsSelected { get => isSelected; set => isSelected = value; }
+        
+        public decimal SumPlBuy { get => sumPlBuy; set => sumPlBuy = value; }
+        public decimal SumBuyAmt { get => sumBuyAmt; set => sumBuyAmt = value; }
+        public decimal SumBuyPrice { get => sumBuyPrice; set => sumBuyPrice = value; }
+        public int BuysIn { get => buysIn; set => buysIn = value; }
+        public decimal SumPlSell { get => sumPlSell; set => sumPlSell = value; }
+        public decimal SumSellAmt { get => sumSellAmt; set => sumSellAmt = value; }
+        public decimal SumSellPrice { get => sumSellPrice; set => sumSellPrice = value; }
+        public int SellsIn { get => sellsIn; set => sellsIn = value; }
 
         public override bool Equals(object obj)
         {
