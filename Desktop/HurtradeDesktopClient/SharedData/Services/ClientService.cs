@@ -133,7 +133,10 @@ namespace SharedData.Services
                         if (null != OnUpdateReceived)
                         {
                             ClientUpdateEventArgs update = JsonConvert.DeserializeObject<ClientUpdateEventArgs>(ASCIIEncoding.UTF8.GetString(body));
-
+                            if(null == update.Positions)
+                            {
+                                update.Positions = new Dictionary<Guid, TradePosition>();
+                            }
                             //for net calculation
                             Dictionary<string, List<TradePosition>> netPosition = new Dictionary<string, List<TradePosition>>(update.Positions.Count);
 
