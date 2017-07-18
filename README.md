@@ -8,7 +8,7 @@ Following screenshots present the current status of development. For full list o
 
 Please note that the project is in infacy stage and errors are expected.
 
-# Client Interface
+# Trader Interface
 ---
 ![Client Interface](http://i.imgur.com/AdXj8wn.png)
 

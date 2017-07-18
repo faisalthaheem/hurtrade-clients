@@ -46,6 +46,8 @@ namespace SharedData.poco.positions
         private DateTime approvedopenat;
         private DateTime approvedcloseat;
 
+        private long friendlyorderid;
+
         //these are locally used
         private decimal sumPlBuy;
         private decimal sumBuyAmt;
@@ -83,6 +85,7 @@ namespace SharedData.poco.positions
         public decimal SumSellAmt { get => sumSellAmt; set => sumSellAmt = value; }
         public decimal SumSellPrice { get => sumSellPrice; set => sumSellPrice = value; }
         public int SellsIn { get => sellsIn; set => sellsIn = value; }
+        public long Friendlyorderid { get => friendlyorderid; set => friendlyorderid = value; }
 
         public override bool Equals(object obj)
         {

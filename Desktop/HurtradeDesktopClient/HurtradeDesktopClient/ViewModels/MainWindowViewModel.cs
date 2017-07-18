@@ -282,7 +282,7 @@ namespace HurtradeDesktopClient.ViewModels
                 AvailableCash = decimal.Parse(e.GenericResponse["availableCash"]);
                 FloatingPL = decimal.Parse(e.GenericResponse["floating"]);
                 UsedMargin = decimal.Parse(e.GenericResponse["usedMargin"]);
-                UsableMargin = decimal.Parse(e.GenericResponse["usable"]);
+                UsableMargin = decimal.Parse(e.GenericResponse["usableMargin"]);
                 Equity = decimal.Parse(e.GenericResponse["equity"]);
             });
         }

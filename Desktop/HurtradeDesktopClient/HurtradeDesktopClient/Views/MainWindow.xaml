@@ -156,13 +156,13 @@
                   Width = "100"/>
 
                             <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
-                  Width = "100"/>
+                  Width = "70"/>
 
                             <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
-                  Width = "100"/>
+                  Width = "70"/>
 
                             <GridViewColumn Header = "Date/Time" DisplayMemberBinding = "{Binding QuoteTime}" 
-                  Width = "100"/>
+                  Width = "150"/>
 
                         </GridView>
                     </ListView.View>
@@ -208,6 +208,7 @@
 
                             <ListView.View>
                                 <GridView>
+                                    <GridViewColumn Header = "Id" DisplayMemberBinding = "{Binding Friendlyorderid}" Width = "60"/>
                                     <GridViewColumn Header = "Date/Time" DisplayMemberBinding = "{Binding Createdat}" Width = "auto"/>
                                     <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
                                     <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
