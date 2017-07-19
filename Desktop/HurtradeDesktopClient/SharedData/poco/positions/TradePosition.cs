@@ -15,6 +15,7 @@ namespace SharedData.poco.positions
         public static string ORDER_STATE_OPEN = "open";
         public static string ORDER_STATE_PENDING_CLOSE = "pending_dealer_close";
         public static string ORDER_STATE_CLOSED = "closed";
+        public static string ORDER_STATE_REQUOTED = "requoted";
 
         //is this buy or sell?
         private string orderType;
@@ -60,6 +61,10 @@ namespace SharedData.poco.positions
         private int sellsIn;
 
 
+        private bool requotePriceSet = false;
+        private decimal requotePrice;
+
+
         public string OrderType { get => orderType; set => orderType = value; }
         public string Commodity { get => commodity; set => commodity = value; }
         public decimal Amount { get => amount; set => amount = value; }
@@ -86,6 +91,8 @@ namespace SharedData.poco.positions
         public decimal SumSellPrice { get => sumSellPrice; set => sumSellPrice = value; }
         public int SellsIn { get => sellsIn; set => sellsIn = value; }
         public long Friendlyorderid { get => friendlyorderid; set => friendlyorderid = value; }
+        public decimal RequotePrice { get => requotePrice; set => requotePrice = value; }
+        public bool RequotePriceSet { get => requotePriceSet; set => requotePriceSet = value; }
 
         public override bool Equals(object obj)
         {

@@ -134,37 +134,58 @@
                     <Button
                         Grid.Row="2"
                         Grid.Column="0"
-                        Content="+1"/>
+                        Content="+1"
+                        Command="{Binding RequoteSetPriceCommand}"
+                        CommandParameter="+1"
+                        />
 
                     <Button
                         Grid.Row="2"
                         Grid.Column="1"
-                        Content="+5"/>
+                        Content="+5"
+                        Command="{Binding RequoteSetPriceCommand}"
+                        CommandParameter="+5"
+                        />
 
                     <Button
                         Grid.Row="2"
                         Grid.Column="2"
-                        Content="+10"/>
+                        Content="+10"
+                        Command="{Binding RequoteSetPriceCommand}"
+                        CommandParameter="+10"
+                        />
 
                     <Button
                         Grid.Row="3"
                         Grid.ColumnSpan="3"
-                        Content="Requote"/>
+                        Content="Requote"
+                        Command="{Binding RequoteSelectedOrders}"
+                        />
+                    
 
                     <Button
                         Grid.Row="4"
                         Grid.Column="0"
-                        Content="-1"/>
+                        Content="-1"
+                        Command="{Binding RequoteSetPriceCommand}"
+                        CommandParameter="-1"
+                        />
 
                     <Button
                         Grid.Row="4"
                         Grid.Column="1"
-                        Content="-5"/>
+                        Content="-5"
+                        Command="{Binding RequoteSetPriceCommand}"
+                        CommandParameter="-5"
+                        />
 
                     <Button
                         Grid.Row="4"
                         Grid.Column="2"
-                        Content="-10"/>
+                        Content="-10"
+                        Command="{Binding RequoteSetPriceCommand}"
+                        CommandParameter="-10"
+                        />
                 </Grid>
                 
                 <ListView 

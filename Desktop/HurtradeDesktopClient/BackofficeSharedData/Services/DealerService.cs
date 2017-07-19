@@ -323,6 +323,31 @@ namespace BackofficeSharedData.Services
 
             return ret;
         }
+
+        private void sendCommand(GenericRequestResponseDictionary request, string messageType)
+        {
+            lock (lockChannel)
+            {
+                try
+                {
+                    IBasicProperties props = _channel.CreateBasicProperties();
+                    props.UserId = _username;
+                    props.Type = messageType;
+
+                    _channel.BasicPublish(
+                        officeExchangeName,
+                        "fromdealer",
+                        props,
+                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
+                    );
+
+                }
+                catch (Exception ex)
+                {
+                    log.Error(ex.Message, ex);
+                }
+            }
+        }
         
         public void approveRejectOrder(string clientUsername, Guid orderid, string commandVerb)
         {
@@ -331,26 +356,18 @@ namespace BackofficeSharedData.Services
             request["orderId"] = orderid.ToString();
             request["command"] = commandVerb;
 
-            lock (lockChannel)
-            {
-                try
-                {
-                    IBasicProperties props = _channel.CreateBasicProperties();
-                    props.UserId = _username;
-                    props.Type = "client"; //as we want server to process a client's positions
+            sendCommand(request, "client");
+        }
 
-                    _channel.BasicPublish(
-                        officeExchangeName,
-                        "fromdealer",
-                        props,
-                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
-                    );
-                    
-                }catch(Exception ex)
-                {
-                    log.Error(ex.Message, ex);
-                }
-            }
+        public void requoteOrder(string clientUsername, Guid orderid, decimal requotePrice)
+        {
+            GenericRequestResponseDictionary request = new GenericRequestResponseDictionary();
+            request["client"] = clientUsername;
+            request["orderId"] = orderid.ToString();
+            request["command"] = "requote";
+            request["requoted_price"] = requotePrice.ToString();
+
+            sendCommand(request, "client");
         }
 
 
@@ -360,27 +377,7 @@ namespace BackofficeSharedData.Services
             request["command"] = "listCoverAccounts";
             request["responseQueue"] = consumerQueueName;
 
-            lock (lockChannel)
-            {
-                try
-                {
-                    IBasicProperties props = _channel.CreateBasicProperties();
-                    props.UserId = _username;
-                    props.Type = "office";
-
-                    _channel.BasicPublish(
-                        officeExchangeName,
-                        "fromdealer",
-                        props,
-                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
-                    );
-
-                }
-                catch (Exception ex)
-                {
-                    log.Error(ex.Message, ex);
-                }
-            }
+            sendCommand(request, "office");
         }
 
         public void saveUpdateCloseCoverPosition(CoverPosition position, string command)
@@ -389,27 +386,7 @@ namespace BackofficeSharedData.Services
             request["position"] = JsonConvert.SerializeObject(position);
             request["command"] = command;
 
-            lock (lockChannel)
-            {
-                try
-                {
-                    IBasicProperties props = _channel.CreateBasicProperties();
-                    props.UserId = _username;
-                    props.Type = "office";
-
-                    _channel.BasicPublish(
-                        officeExchangeName,
-                        "fromdealer",
-                        props,
-                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(request))
-                    );
-
-                }
-                catch (Exception ex)
-                {
-                    log.Error(ex.Message, ex);
-                }
-            }
+            sendCommand(request, "office");
         }
 
     }

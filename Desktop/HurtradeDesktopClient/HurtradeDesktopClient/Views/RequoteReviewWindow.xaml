@@ -1,0 +1,120 @@
+﻿<simpleChildWindow:ChildWindow x:Class="HurtradeDesktopClient.Views.RequoteReviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:intr="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:simpleChildWindow="clr-namespace:MahApps.Metro.SimpleChildWindow;assembly=MahApps.Metro.SimpleChildWindow"
+        xmlns:local="clr-namespace:HurtradeDesktopClient.Views"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        mc:Ignorable="d"
+        d:DesignHeight="300"
+		d:DesignWidth="300"
+        Title="{Binding WindowTitle}" Height="300" Width="300"
+        CloseOnOverlay="True"
+        ShowCloseButton="True"
+        AllowMove="True"
+                               
+        >
+    <intr:Interaction.Triggers>
+        <intr:EventTrigger EventName="Closing">
+            <intr:InvokeCommandAction Command="{Binding WindowClosing}"/>
+        </intr:EventTrigger>
+
+        <intr:EventTrigger EventName="Loaded">
+            <intr:InvokeCommandAction Command="{Binding WindowLoaded}"/>
+        </intr:EventTrigger>
+    </intr:Interaction.Triggers>
+
+    <simpleChildWindow:ChildWindow.Icon>
+        <Rectangle Width="22"
+				   Height="22"
+				   Fill="{DynamicResource IdealForegroundColorBrush}">
+            <!--<Rectangle.OpacityMask>
+                <VisualBrush Stretch="Uniform"
+							 Visual="{DynamicResource appbar_cog}" />
+            </Rectangle.OpacityMask>-->
+        </Rectangle>
+    </simpleChildWindow:ChildWindow.Icon>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel
+            Grid.Row="0"
+            Grid.ColumnSpan="2"
+            >
+            <TextBlock Margin="10" FontSize="20">Order Requoted</TextBlock>
+            <TextBlock Margin="10" FontSize="20" Foreground="Red"
+                Text="{Binding TimeRemaining}"
+            />
+        </StackPanel>
+        
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="0"
+            Text="Order Id"
+            Margin="5"
+            />
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="1"
+            Text="{Binding OrderId}"
+            Margin="5"
+            />
+        
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            Text="Requested Price"
+            Margin="5"
+            />
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="1"
+            Text="{Binding RequestedPrice}"
+            Margin="5"
+            />
+        
+        <TextBlock
+            Grid.Row="3"
+            Grid.Column="0"
+            Text="Requoted Price"
+            Margin="5"
+            />
+        <TextBlock
+            Grid.Row="3"
+            Grid.Column="1"
+            Margin="5"
+            Text="{Binding RequotedPrice}"
+            Foreground="Red"
+            FontWeight="Bold"
+            />
+
+        <Button
+            Grid.Row="4"
+            Grid.Column="0"
+            Content="Accept Requoted Price"
+            Command="{Binding AcceptRequotedPriceCommand}"
+            Margin="5"
+            />
+        <Button
+            Grid.Row="4"
+            Grid.Column="1"
+            Content="Reject Requoted Price"
+            Command="{Binding RejectRequotedPriceCommand}"
+            Margin="5"
+            />
+        
+    </Grid>
+</simpleChildWindow:ChildWindow>

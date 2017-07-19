@@ -34,6 +34,9 @@ namespace HurtradeBackofficeClient.ViewModels
         public DelegateCommand RejectSelectedTradeCommand { get; private set; }
         public DelegateCommand BulkApproveSelectedTradeCommand { get; private set; }
         public DelegateCommand BulkRejectSelectedTradeCommand { get; private set; }
+        
+        public DelegateCommand<object> RequoteSetPriceCommand { get; private set; }
+        public DelegateCommand RequoteSelectedOrders { get; private set; }
 
         public DelegateCommand NewCoverPositionCommand { get; private set; }
         public DelegateCommand EditSelectedCoverPositionCommand { get; private set; }
@@ -151,6 +154,10 @@ namespace HurtradeBackofficeClient.ViewModels
             RejectSelectedTradeCommand = new DelegateCommand(ExecuteRejectSelectedTradeCommand);
             BulkApproveSelectedTradeCommand = new DelegateCommand(ExecuteBulkApproveSelectedTradeCommand);
             BulkRejectSelectedTradeCommand = new DelegateCommand(ExecuteBulkRejectSelectedTradeCommand);
+
+            RequoteSetPriceCommand = new DelegateCommand<object>(ExecuteRequoteSetPriceCommand);
+            RequoteSelectedOrders = new DelegateCommand(ExecuteRequoteSelectedOrders);
+
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
             WindowClosed = new DelegateCommand(ExecuteWindowClosed);
@@ -163,6 +170,70 @@ namespace HurtradeBackofficeClient.ViewModels
             string commodity = (QuoteCollectionView.CurrentItem as SharedData.poco.Quote).Name;
             ClientService.GetInstance().requestCandleStickChartData(commodity);
             CandleStickHeading = "Candlestick Chart for " + commodity;
+        }
+
+        private void ExecuteRequoteSelectedOrders()
+        {
+            lock (lockTrades)
+            {
+                foreach (var row in PendingTradesCollectionView)
+                {
+                    TradePosition position = row as TradePosition;
+                    if (position.IsSelected)
+                    {
+                        DealerService.GetInstance().requoteOrder(
+                            position.ClientName, 
+                            position.OrderId, 
+                            position.RequotePrice
+                        );
+                    }
+                }
+            }
+        }
+
+        private void ExecuteRequoteSetPriceCommand(object price)
+        {
+            decimal requoteDiffernce = 0;
+            
+            try
+            {
+                requoteDiffernce = Convert.ToDecimal(price);
+                requoteDiffernce /= 10000;
+            }
+            catch(Exception ex)
+            {
+                log.Error(ex.Message, ex);
+            }
+
+            lock (lockTrades)
+            {
+                foreach (var row in PendingTrades)
+                {
+                    TradePosition position = row as TradePosition;
+                    if (position.IsSelected)
+                    {
+                        if (position.RequotePriceSet)
+                        {
+                            position.RequotePrice += requoteDiffernce;
+                        }
+                        else
+                        {
+                            if (position.OrderState == TradePosition.ORDER_STATE_PENDING_OPEN)
+                            {
+                                position.RequotePrice = position.OpenPrice + requoteDiffernce;
+                            }
+                            else
+                            {
+                                position.RequotePrice = position.ClosePrice + requoteDiffernce;
+                            }
+                            position.RequotePriceSet = true;
+
+                        }
+                    }
+                }
+            }
+            
+            PendingTradesCollectionView.Refresh();
         }
 
         private void ExecuteBulkApproveSelectedTradeCommand()
@@ -352,6 +423,10 @@ namespace HurtradeBackofficeClient.ViewModels
                                 {
                                     OpenTrades.Add(t);
                                 }
+                                else if(t.OrderState.Equals(TradePosition.ORDER_STATE_REQUOTED))
+                                {
+                                    continue;
+                                }
                                 else
                                 {
                                     if (!PendingTrades.Contains(t))
@@ -360,7 +435,10 @@ namespace HurtradeBackofficeClient.ViewModels
                                     }
                                     else
                                     {
-                                        t.IsSelected = PendingTrades.First(x => x.Equals(t)).IsSelected;
+                                        TradePosition trade = PendingTrades.First(x => x.Equals(t));
+                                        t.IsSelected = trade.IsSelected;
+                                        t.RequotePrice = trade.RequotePrice;
+                                        t.RequotePriceSet = trade.RequotePriceSet;
                                         pendingWithSelectionPreserved.Add(t);
                                     }
                                 }

@@ -230,6 +230,24 @@ namespace SharedData.Services
             }
         }
 
+
+        public void acceptRequote(Guid orderid)
+        {
+            IBasicProperties props = _channel.CreateBasicProperties();
+            props.UserId = _username;
+            props.Type = "requote";
+
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            dic["orderid"] = orderid.ToString();
+
+            _channel.BasicPublish(
+                        clientExchangeName,
+                        "request",
+                        props,
+                        UTF8Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dic))
+                    );
+        }
+
         public void requestTrade(TradeRequest request)
         {
             IBasicProperties props = _channel.CreateBasicProperties();

@@ -7,11 +7,8 @@ using SharedData.poco;
 using SharedData.poco.trade;
 using System;
 using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 using MahApps.Metro.Controls;
-using MahApps.Metro.SimpleChildWindow.Utils;
 using SharedData.poco.positions;
 using SharedData.Services;
 using SharedData.events;
@@ -19,6 +16,7 @@ using LiveCharts;
 using LiveCharts.Wpf;
 using LiveCharts.Defaults;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HurtradeDesktopClient.ViewModels
 {
@@ -221,6 +219,7 @@ namespace HurtradeDesktopClient.ViewModels
             ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
             ClientService.GetInstance().OnAccountStatusEventReceived += MainWindowViewModel_OnAccountStatusEventReceived;
             ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
+            ClientService.GetInstance().OnOrderUpdateReceived += MainWindowViewModel_OnOrderUpdateReceived;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -253,6 +252,61 @@ namespace HurtradeDesktopClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnOrderUpdateReceived(object sender, GenericResponseEventArgs e)
+        {
+            if (e.GenericResponse.ContainsKey("requote"))
+            {
+                App.Current.Dispatcher.Invoke((Action)async delegate
+                {
+                    RequoteReviewWindow rrw = new RequoteReviewWindow();
+                    RequoteReviewWindowViewModel rrwm = rrw.DataContext as RequoteReviewWindowViewModel;
+
+                    Guid orderId = Guid.Parse(e.GenericResponse["orderid"]);
+                    TradePosition p = null;
+                    lock (lockTrades)
+                    {
+                        p = Trades.FirstOrDefault(x => orderId.CompareTo(x.OrderId) == 0);
+                    }
+
+                    if (p != null)
+                    {
+                        rrwm.TradePosition = p;
+                        if (e.GenericResponse["pendingclose"].Length > 0)
+                        {
+                            rrwm.RequestedPrice = p.ClosePrice;
+                        }
+                        else
+                        {
+                            rrwm.RequestedPrice = p.OpenPrice;
+                        }
+                        rrwm.RequotedPrice = decimal.Parse(e.GenericResponse["requoteprice"]);
+                        rrwm.OrderId = p.Friendlyorderid;
+                        rrwm.RemainingTime = int.Parse(e.GenericResponse["timeout"]);
+                        rrwm.OnRequoteReviewed += Rrwm_OnRequoteReviewed;
+
+                        rrwm.View = rrw;
+
+                        await ChildWindowManager.ShowChildWindowAsync(_mainWindow, rrw, ChildWindowManager.OverlayFillBehavior.FullWindow);
+                    }
+                    else
+                    {
+                        //todo: log here
+                    }
+                });
+
+            }
+        }
+
+        private void Rrwm_OnRequoteReviewed(RequoteReviewWindowViewModel model, string action)
+        {
+            model.View.Close();
+
+            if(action == "accept")
+            {
+                ClientService.GetInstance().acceptRequote(model.TradePosition.OrderId);
+            }
         }
 
         private void MainWindowViewModel_OnCandleStickDataEventHandler(object sender, CandleStickDataEventArgs e)
