@@ -19,6 +19,7 @@ namespace BackofficeSharedData.Services
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
     public delegate void OfficePositionsUpdateReceivedHandler(object sender, BackofficeUpdateEventArgs e);
     public delegate void CoverAccountsListReceivedHandler(object sender, CoverAccountsEventArgs e);
+    public delegate void NotificationReceivedEventHandler(string notification);
 
     public class DealerService
     {
@@ -35,6 +36,7 @@ namespace BackofficeSharedData.Services
         public event UpdateReceivedHandler OnUpdateReceived;
         public event OfficePositionsUpdateReceivedHandler OnOfficePositionsUpdateReceived;
         public event CoverAccountsListReceivedHandler OnCoverAccountsListReceived;
+        public event NotificationReceivedEventHandler OnNotificationReceived;
 
         private Object lockChannel = new Object();
 
@@ -219,6 +221,11 @@ namespace BackofficeSharedData.Services
 
                     OnCoverAccountsListReceived(this, args);
 
+                }
+                else if (messageType.Equals("notification"))
+                {
+                    string payload = ASCIIEncoding.UTF8.GetString(body);
+                    OnNotificationReceived(payload);
                 }
             }
             catch (Exception ex)

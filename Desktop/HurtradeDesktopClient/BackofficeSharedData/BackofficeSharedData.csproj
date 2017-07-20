@@ -57,7 +57,7 @@
     <Compile Include="poco\updates\CoverPosition.cs" />
     <Compile Include="poco\updates\OfficeFloatingStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\DealerService.cs" />
+    <Compile Include="services\DealerService.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

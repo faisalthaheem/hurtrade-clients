@@ -42,6 +42,7 @@ namespace HurtradeBackofficeClient.ViewModels
         public DelegateCommand EditSelectedCoverPositionCommand { get; private set; }
         public DelegateCommand CloseSelectedCoverPositionCommand { get; private set; }
 
+        public DelegateCommand ShowLogsCommand { get; private set; }
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         public DelegateCommand WindowClosed { get; private set; }
@@ -62,6 +63,9 @@ namespace HurtradeBackofficeClient.ViewModels
 
         public ObservableCollection<CoverPosition> _coverPositions = new ObservableCollection<CoverPosition>();
         public ListCollectionView OpenCoverTradesCollectionView { get; private set; }
+
+        public ObservableCollection<string> _notificationLogsList = new ObservableCollection<string>();
+        public ListCollectionView NotificationLogsListCollectionView { get; private set; }
         #endregion
 
 
@@ -88,6 +92,26 @@ namespace HurtradeBackofficeClient.ViewModels
         #endregion
 
         #region properties
+
+        private bool _LogsFlyoutOpen = false;
+        public bool LogsFlyoutOpen
+        {
+            get { return _LogsFlyoutOpen; }
+            set
+            {
+                SetProperty(ref _LogsFlyoutOpen, value);
+            }
+        }
+
+        private bool _NotificationsFlyoutOpen = false;
+        public bool NotificationsFlyoutOpen
+        {
+            get { return _NotificationsFlyoutOpen; }
+            set {
+                SetProperty(ref _NotificationsFlyoutOpen, value);
+            }
+        }
+
         private string[] _candleStickXLabels = null;
         public string[] CandleStickXLabels
         {
@@ -136,6 +160,8 @@ namespace HurtradeBackofficeClient.ViewModels
             QuoteCollectionView = new ListCollectionView(Quotes);
             FloatingStatusCollectionView = new ListCollectionView(_floatingStatus);
             OpenCoverTradesCollectionView = new ListCollectionView(_coverPositions);
+            NotificationLogsListCollectionView = new ListCollectionView(_notificationLogsList);
+            
 
             _mainWindow = mainWindow;
            _dialogCoord = dialogCoordinator;
@@ -158,9 +184,16 @@ namespace HurtradeBackofficeClient.ViewModels
             RequoteSetPriceCommand = new DelegateCommand<object>(ExecuteRequoteSetPriceCommand);
             RequoteSelectedOrders = new DelegateCommand(ExecuteRequoteSelectedOrders);
 
+            ShowLogsCommand = new DelegateCommand(ExecuteShowLogsCommand);
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
             WindowClosed = new DelegateCommand(ExecuteWindowClosed);
+        }
+
+
+        private void ExecuteShowLogsCommand()
+        {
+            LogsFlyoutOpen = true;
         }
 
         private void ExecuteCandlestickChartCommand()
@@ -310,9 +343,10 @@ namespace HurtradeBackofficeClient.ViewModels
         private async void ExecuteWindowLoaded()
         {
             ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
-            DealerService.GetInstance().OnOfficePositionsUpdateReceived += OnOfficePositionsUpdateReceived;
             ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
 
+            DealerService.GetInstance().OnOfficePositionsUpdateReceived += OnOfficePositionsUpdateReceived;
+            DealerService.GetInstance().OnNotificationReceived += MainWindowViewModel_OnNotificationReceived;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -346,6 +380,15 @@ namespace HurtradeBackofficeClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnNotificationReceived(string notification)
+        {
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                _notificationLogsList.Insert(0, notification);
+                NotificationLogsListCollectionView.Refresh();
+            });
         }
 
         private void MainWindowViewModel_OnCandleStickDataEventHandler(object sender, CandleStickDataEventArgs e)

@@ -66,8 +66,8 @@
     <Compile Include="poco\trade\TradeResponse.cs" />
     <Compile Include="poco\updates\ClientUpdate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\AuthService.cs" />
-    <Compile Include="Services\ClientService.cs" />
+    <Compile Include="services\AuthService.cs" />
+    <Compile Include="services\ClientService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

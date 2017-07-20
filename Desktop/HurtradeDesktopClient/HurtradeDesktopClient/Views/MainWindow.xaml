@@ -185,7 +185,12 @@
             Grid.Column="1"
             Grid.Row="0"
             >
-            <TabControl DockPanel.Dock="Top">
+            <TabControl 
+                DockPanel.Dock="Top"
+                TabStripPlacement="Top"
+                Controls:TabControlHelper.IsUnderlined="True"
+                Controls:TabControlHelper.Underlined="TabPanel"
+            >
                 <TabItem Header="Trades">
                         <ListView 
                             HorizontalAlignment = "Left" 
