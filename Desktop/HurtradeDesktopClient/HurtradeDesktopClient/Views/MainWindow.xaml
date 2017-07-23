@@ -31,107 +31,114 @@
         </intr:EventTrigger>
     </intr:Interaction.Triggers>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="5"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition
+    <DockPanel
+        LastChildFill="True"
+    >
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Command="{Binding ShowLogsCommand}" Content="Notifications Log"/>
+            </ToolBar>
+        </ToolBarTray>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="5"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition
                 Width="420px"
                 />
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-        <DockPanel
+            <DockPanel
             Grid.Row="0"
             Grid.Column="0"
             Grid.RowSpan="4"
             >
-            <Grid DockPanel.Dock="Top">
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
+                <Grid DockPanel.Dock="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Available Cash -->
-                <Label
+                    <!-- Available Cash -->
+                    <Label
                     Grid.Row="0"
                     Grid.Column="0"
                     Content="Available Cash"
                     HorizontalContentAlignment="Right"
                     />
-                <Label
+                    <Label
                     Grid.Row="0"
                     Grid.Column="1"
                     Content="{Binding AvailableCash}"
                     />
 
-                <!-- Equity -->
-                <Label
+                    <!-- Equity -->
+                    <Label
                     Grid.Row="1"
                     Grid.Column="0"
                     Content="Equity"
                     HorizontalContentAlignment="Right"
                     />
-                <Label
+                    <Label
                     Grid.Row="1"
                     Grid.Column="1"
                     Content="{Binding Equity}"
                     />
 
-                <!-- Floating -->
-                <Label
+                    <!-- Floating -->
+                    <Label
                     Grid.Row="2"
                     Grid.Column="0"
                     Content="Floating P/L"
                     HorizontalContentAlignment="Right"
                     />
-                <Label
+                    <Label
                     Grid.Row="2"
                     Grid.Column="1"
                     Content="{Binding FloatingPL}"
                     />
 
-                <!-- Used Margin -->
-                <Label
+                    <!-- Used Margin -->
+                    <Label
                     Grid.Row="3"
                     Grid.Column="0"
                     Content="Used Margin"
                     HorizontalContentAlignment="Right"
                     />
-                <Label
+                    <Label
                     Grid.Row="3"
                     Grid.Column="1"
                     Content="{Binding UsedMargin}"
                     />
 
-                <!-- Usable -->
-                <Label
+                    <!-- Usable -->
+                    <Label
                     Grid.Row="4"
                     Grid.Column="0"
                     Content="Usable Margin"
                     HorizontalContentAlignment="Right"
                     />
-                <Label
+                    <Label
                     Grid.Row="4"
                     Grid.Column="1"
                     Content="{Binding UsableMargin}"
                     />
 
-            </Grid>
+                </Grid>
 
-            <DockPanel DockPanel.Dock="Bottom">
-                <ListView 
-                HorizontalAlignment = "Left" 
+                <DockPanel DockPanel.Dock="Bottom">
+                    <ListView 
                 DockPanel.Dock="Top"
                 Margin = "10,10,0,0" 
                 VerticalAlignment = "Top" 
@@ -143,57 +150,56 @@
                 ScrollViewer.VerticalScrollBarVisibility="Visible"
                 ScrollViewer.CanContentScroll="False"
             >
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="{x:Type ListViewItem}">
-                            <Setter Property="BorderBrush" Value="LightGray" />
-                            <Setter Property="BorderThickness" Value="0,0,0,1" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="{x:Type ListViewItem}">
+                                <Setter Property="BorderBrush" Value="LightGray" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
 
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Name}" 
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Name}" 
                   Width = "100"/>
 
-                            <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
+                                <GridViewColumn Header = "Bid" DisplayMemberBinding = "{Binding Bid}" 
                   Width = "70"/>
 
-                            <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
+                                <GridViewColumn Header = "Ask" DisplayMemberBinding = "{Binding Ask}" 
                   Width = "70"/>
 
-                            <GridViewColumn Header = "Date/Time" DisplayMemberBinding = "{Binding QuoteTime}" 
+                                <GridViewColumn Header = "Date/Time" DisplayMemberBinding = "{Binding QuoteTime}" 
                   Width = "150"/>
 
-                        </GridView>
-                    </ListView.View>
+                            </GridView>
+                        </ListView.View>
 
 
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="New Trade" Command="{Binding TradeCommand}"/>
-                            <MenuItem Header="Candlestick Chart" Command="{Binding CandlestickChartCommand}"/>
-                        </ContextMenu>
-                    </ListView.ContextMenu>
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="New Trade" Command="{Binding TradeCommand}"/>
+                                <MenuItem Header="Candlestick Chart" Command="{Binding CandlestickChartCommand}"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
 
-                </ListView>
+                    </ListView>
+                </DockPanel>
             </DockPanel>
-        </DockPanel>
 
-        
 
-        <DockPanel
+
+            <DockPanel
             Grid.Column="1"
             Grid.Row="0"
             >
-            <TabControl 
+                <TabControl 
                 DockPanel.Dock="Top"
                 TabStripPlacement="Top"
                 Controls:TabControlHelper.IsUnderlined="True"
                 Controls:TabControlHelper.Underlined="TabPanel"
             >
-                <TabItem Header="Trades">
+                    <TabItem Header="Trades">
                         <ListView 
-                            HorizontalAlignment = "Left" 
                             Margin = "10,10,0,0" 
                             VerticalAlignment = "Top" 
                             Width = "auto" 
@@ -223,24 +229,23 @@
                                     <!--<GridViewColumn Header = "Close" DisplayMemberBinding = "{Binding ClosePrice}" Width = "auto"/>-->
                                     <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "150"/>
                                     <GridViewColumn Header = "State" DisplayMemberBinding = "{Binding OrderState}" Width = "auto"/>
-                                    
+
                                 </GridView>
                             </ListView.View>
 
-                        <ListView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Close" Command="{Binding TradeCloseCommand}"/>
-                            </ContextMenu>
-                        </ListView.ContextMenu>
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Close" Command="{Binding TradeCloseCommand}"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
 
-                    </ListView>
+                        </ListView>
                     </TabItem>
-                <TabItem Header="Orders">
+                    <TabItem Header="Orders">
 
-                </TabItem>
-                <TabItem Header="Net Trade">
-                    <ListView 
-                            HorizontalAlignment = "Left" 
+                    </TabItem>
+                    <TabItem Header="Net Trade">
+                        <ListView 
                             Margin = "10,10,0,0" 
                             VerticalAlignment = "Top" 
                             Width = "auto" 
@@ -251,42 +256,42 @@
                             ScrollViewer.CanContentScroll="False"
                             
                         >
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="{x:Type ListViewItem}">
-                                <Setter Property="BorderBrush" Value="LightGray" />
-                                <Setter Property="BorderThickness" Value="0,0,0,1" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="BorderBrush" Value="LightGray" />
+                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
 
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
-                                <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
-                                <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
-                                <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
-                                <GridViewColumn Header = "Current" DisplayMemberBinding = "{Binding CurrentPrice}" Width = "auto"/>
-                                <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "150"/>
-                            </GridView>
-                        </ListView.View>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header = "Symbol" DisplayMemberBinding = "{Binding Commodity}" Width = "100"/>
+                                    <GridViewColumn Header = "B/S" DisplayMemberBinding = "{Binding OrderType}" Width = "auto"/>
+                                    <GridViewColumn Header = "Amt" DisplayMemberBinding = "{Binding Amount}" Width = "50"/>
+                                    <GridViewColumn Header = "Open" DisplayMemberBinding = "{Binding OpenPrice}" Width = "auto"/>
+                                    <GridViewColumn Header = "Current" DisplayMemberBinding = "{Binding CurrentPrice}" Width = "auto"/>
+                                    <GridViewColumn Header = "P/L" DisplayMemberBinding = "{Binding CurrentPl}" Width = "150"/>
+                                </GridView>
+                            </ListView.View>
 
-                        <ListView.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Close" Command="{Binding TradeCloseCommand}"/>
-                            </ContextMenu>
-                        </ListView.ContextMenu>
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Close" Command="{Binding TradeCloseCommand}"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
 
-                    </ListView>
-                </TabItem>
-            </TabControl>
-        </DockPanel>
+                        </ListView>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
 
-        <GridSplitter Grid.Row="1" Grid.Column="1" Height="5" HorizontalAlignment="Stretch"/>
-        
-        <DockPanel
+            <GridSplitter Grid.Row="1" Grid.Column="1" Height="5" HorizontalAlignment="Stretch"/>
+
+            <DockPanel
             Grid.Column="1"
             Grid.Row="2"
             >
-            <Label 
+                <Label 
                 Content="{Binding CandleStickHeading}" 
                 DockPanel.Dock="Top" 
                 Height="50"
@@ -296,12 +301,65 @@
 
 
 
-            <lvc:CartesianChart Series="{Binding CandleStickCollection}">
-                <lvc:CartesianChart.AxisX>
-                    <lvc:Axis Labels="{Binding CandleStickXLabels}"/>
-                </lvc:CartesianChart.AxisX>
-            </lvc:CartesianChart>
-        </DockPanel>
+                <lvc:CartesianChart Series="{Binding CandleStickCollection}">
+                    <lvc:CartesianChart.AxisX>
+                        <lvc:Axis Labels="{Binding CandleStickXLabels}"/>
+                    </lvc:CartesianChart.AxisX>
+                </lvc:CartesianChart>
+            </DockPanel>
 
-    </Grid>
+        </Grid>
+    </DockPanel>
+
+    <Controls:MetroWindow.Flyouts>
+        <Controls:FlyoutsControl>
+
+            <Controls:Flyout x:Name="LogsFlyout"
+                            IsAutoCloseEnabled="False"
+                            CloseButtonVisibility="Visible"
+                            Header="Logs"
+                            Position="Right"
+                            IsOpen="{Binding LogsFlyoutOpen}"
+            >
+                <DockPanel
+                        Margin="10"
+                        SnapsToDevicePixels="True"
+                        Width="250"
+                        LastChildFill="True"
+                    >
+                    <ListBox 
+                        Margin = "10" 
+                        SelectionMode="Single"
+                        IsSynchronizedWithCurrentItem="True"
+                        ItemsSource="{Binding NotificationLogsListCollectionView}"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.CanContentScroll="False"
+                    >
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock Text="{Binding}" 
+                                               TextWrapping="Wrap"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                </DockPanel>
+            </Controls:Flyout>
+
+            <Controls:Flyout x:Name="NotificationsFlyout"
+                            AutoCloseInterval="1500"
+                            IsAutoCloseEnabled="True"
+                            CloseButtonVisibility="Visible"
+                            Header="Notifications"
+                            Position="Bottom"
+                            IsOpen="{Binding NotificationsFlyoutOpen}"
+            >
+
+            </Controls:Flyout>
+
+        </Controls:FlyoutsControl>
+    </Controls:MetroWindow.Flyouts>
 </Controls:MetroWindow>

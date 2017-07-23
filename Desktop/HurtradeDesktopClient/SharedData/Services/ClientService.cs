@@ -18,6 +18,7 @@ namespace SharedData.Services
     public delegate void OrderUpdateEventHandler(object sender, GenericResponseEventArgs e);
     public delegate void AccountStatusEventHandler(object sender, GenericResponseEventArgs e);
     public delegate void CandleStickDataEventHandler(object sender, CandleStickDataEventArgs e);
+    public delegate void NotificationReceivedEventHandler(string notification);
 
     public class ClientService
     {
@@ -33,6 +34,7 @@ namespace SharedData.Services
         public event OrderUpdateEventHandler OnOrderUpdateReceived;
         public event AccountStatusEventHandler OnAccountStatusEventReceived;
         public event CandleStickDataEventHandler OnCandleStickDataEventHandler;
+        public event NotificationReceivedEventHandler OnNotificationReceived;
 
         private string _username, _password;
 
@@ -220,8 +222,13 @@ namespace SharedData.Services
                             OnCandleStickDataEventHandler(this, args);
                         }
                     }
+                    else if (props.Type != null && props.Type.Equals("notification"))
+                    {
+                        string payload = ASCIIEncoding.UTF8.GetString(body);
+                        OnNotificationReceived(payload);
+                    }
 
-                    
+
                 });
             }
             catch (Exception ex)

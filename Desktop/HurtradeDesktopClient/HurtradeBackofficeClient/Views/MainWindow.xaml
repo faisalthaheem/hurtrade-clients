@@ -109,15 +109,41 @@
                     DockPanel.Dock="Top"
                     LastChildFill="True"
                     >
-                    <Grid
-                        Margin="0,10,0,0"
-                        Width="100"
-                        Height="150"
+
+                    <StackPanel
                         DockPanel.Dock="Left"
+                        Height="150"
+                        Width="100"
+                        Margin="0,10,0,0"
                         >
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                             <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button
+                            Grid.Row="0"
+                            Content="Approve"
+                            Command="{Binding BulkApproveSelectedTradeCommand}"
+                            />
+
+                        <Button
+                            Grid.Row="1"
+                            Content="Decline"
+                            Command="{Binding BulkRejectSelectedTradeCommand}"
+                            />
+
+                    </Grid>
+
+                    <Grid
+                        Margin="0,10,0,0"
+                        >
+                        <Grid.RowDefinitions>
+                            
                             <RowDefinition/>
                             <RowDefinition/>
                             <RowDefinition/>
@@ -127,23 +153,10 @@
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                    
+
+
                         <Button
                             Grid.Row="0"
-                            Grid.ColumnSpan="3"
-                            Content="Approve"
-                            Command="{Binding BulkApproveSelectedTradeCommand}"
-                            />
-
-                        <Button
-                            Grid.Row="1"
-                            Grid.ColumnSpan="3"
-                            Content="Decline"
-                            Command="{Binding BulkRejectSelectedTradeCommand}"
-                            />
-
-                        <Button
-                            Grid.Row="2"
                             Grid.Column="0"
                             Content="+1"
                             Command="{Binding RequoteSetPriceCommand}"
@@ -151,7 +164,7 @@
                             />
 
                         <Button
-                            Grid.Row="2"
+                            Grid.Row="0"
                             Grid.Column="1"
                             Content="+5"
                             Command="{Binding RequoteSetPriceCommand}"
@@ -159,7 +172,7 @@
                             />
 
                         <Button
-                            Grid.Row="2"
+                            Grid.Row="0"
                             Grid.Column="2"
                             Content="+10"
                             Command="{Binding RequoteSetPriceCommand}"
@@ -167,7 +180,7 @@
                             />
 
                         <Button
-                            Grid.Row="3"
+                            Grid.Row="1"
                             Grid.ColumnSpan="3"
                             Content="Requote"
                             Command="{Binding RequoteSelectedOrders}"
@@ -175,7 +188,7 @@
                     
 
                         <Button
-                            Grid.Row="4"
+                            Grid.Row="2"
                             Grid.Column="0"
                             Content="-1"
                             Command="{Binding RequoteSetPriceCommand}"
@@ -183,7 +196,7 @@
                             />
 
                         <Button
-                            Grid.Row="4"
+                            Grid.Row="2"
                             Grid.Column="1"
                             Content="-5"
                             Command="{Binding RequoteSetPriceCommand}"
@@ -191,14 +204,15 @@
                             />
 
                         <Button
-                            Grid.Row="4"
+                            Grid.Row="2"
                             Grid.Column="2"
                             Content="-10"
                             Command="{Binding RequoteSetPriceCommand}"
                             CommandParameter="-10"
                             />
                     </Grid>
-                
+                    </StackPanel>
+
                     <ListView 
                         DockPanel.Dock="Right"
                         Height = "auto" 

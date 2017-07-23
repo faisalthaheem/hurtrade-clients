@@ -29,6 +29,7 @@ namespace HurtradeDesktopClient.ViewModels
         public DelegateCommand WindowLoaded { get; private set; }
         public DelegateCommand WindowClosing { get; private set; }
         public DelegateCommand WindowClosed { get; private set; }
+        public DelegateCommand ShowLogsCommand { get; private set; }
         #endregion
 
         #region Properties
@@ -40,6 +41,29 @@ namespace HurtradeDesktopClient.ViewModels
 
         public ObservableCollection<TradePosition> NetTrades = new ObservableCollection<TradePosition>();
         public ListCollectionView NetTradesCollectionView { get; private set; }
+
+        public ObservableCollection<string> _notificationLogsList = new ObservableCollection<string>();
+        public ListCollectionView NotificationLogsListCollectionView { get; private set; }
+
+        private bool _LogsFlyoutOpen = false;
+        public bool LogsFlyoutOpen
+        {
+            get { return _LogsFlyoutOpen; }
+            set
+            {
+                SetProperty(ref _LogsFlyoutOpen, value);
+            }
+        }
+
+        private bool _NotificationsFlyoutOpen = false;
+        public bool NotificationsFlyoutOpen
+        {
+            get { return _NotificationsFlyoutOpen; }
+            set
+            {
+                SetProperty(ref _NotificationsFlyoutOpen, value);
+            }
+        }
 
         private string[] _candleStickXLabels = null;
         public string[] CandleStickXLabels
@@ -174,6 +198,8 @@ namespace HurtradeDesktopClient.ViewModels
             TradesCollectionView = new ListCollectionView(Trades);
             NetTradesCollectionView = new ListCollectionView(NetTrades);
             QuoteCollectionView = new ListCollectionView(Quotes);
+            NotificationLogsListCollectionView = new ListCollectionView(_notificationLogsList);
+
             _mainWindow = mainWindow;
            _dialogCoord = dialogCoordinator;
 
@@ -188,6 +214,12 @@ namespace HurtradeDesktopClient.ViewModels
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
             WindowClosed = new DelegateCommand(ExecuteWindowClosed);
+            ShowLogsCommand = new DelegateCommand(ExecuteShowLogsCommand);
+        }
+
+        private void ExecuteShowLogsCommand()
+        {
+            LogsFlyoutOpen = true;
         }
 
         private void ExecuteCandlestickChartCommand()
@@ -220,6 +252,7 @@ namespace HurtradeDesktopClient.ViewModels
             ClientService.GetInstance().OnAccountStatusEventReceived += MainWindowViewModel_OnAccountStatusEventReceived;
             ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
             ClientService.GetInstance().OnOrderUpdateReceived += MainWindowViewModel_OnOrderUpdateReceived;
+            ClientService.GetInstance().OnNotificationReceived += MainWindowViewModel_OnNotificationReceived;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -252,6 +285,15 @@ namespace HurtradeDesktopClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnNotificationReceived(string notification)
+        {
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                _notificationLogsList.Insert(0, notification);
+                NotificationLogsListCollectionView.Refresh();
+            });
         }
 
         private void MainWindowViewModel_OnOrderUpdateReceived(object sender, GenericResponseEventArgs e)

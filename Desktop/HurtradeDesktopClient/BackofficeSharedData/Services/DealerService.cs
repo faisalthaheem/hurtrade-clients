@@ -13,13 +13,13 @@ using SharedData.poco.positions;
 using System.Collections.Generic;
 using SharedData.misc;
 using BackofficeSharedData.events;
+using SharedData.Services;
 
 namespace BackofficeSharedData.Services
 {
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
     public delegate void OfficePositionsUpdateReceivedHandler(object sender, BackofficeUpdateEventArgs e);
     public delegate void CoverAccountsListReceivedHandler(object sender, CoverAccountsEventArgs e);
-    public delegate void NotificationReceivedEventHandler(string notification);
 
     public class DealerService
     {
