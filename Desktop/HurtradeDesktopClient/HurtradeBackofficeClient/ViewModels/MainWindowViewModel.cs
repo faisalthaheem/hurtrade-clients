@@ -193,7 +193,7 @@ namespace HurtradeBackofficeClient.ViewModels
 
         private void ExecuteShowLogsCommand()
         {
-            LogsFlyoutOpen = true;
+            LogsFlyoutOpen = !LogsFlyoutOpen;
         }
 
         private void ExecuteCandlestickChartCommand()
