@@ -65,6 +65,19 @@ namespace HurtradeDesktopClient.ViewModels
             }
         }
 
+        private string _NotificationText;
+        public string NotificationText
+        {
+            get
+            {
+                return _NotificationText;
+            }
+            set
+            {
+                SetProperty(ref _NotificationText, value);
+            }
+        }
+
         private string[] _candleStickXLabels = null;
         public string[] CandleStickXLabels
         {
@@ -293,6 +306,9 @@ namespace HurtradeDesktopClient.ViewModels
             {
                 _notificationLogsList.Insert(0, notification);
                 NotificationLogsListCollectionView.Refresh();
+
+                NotificationText = notification;
+                NotificationsFlyoutOpen = true;
             });
         }
 

@@ -350,14 +350,23 @@
             </Controls:Flyout>
 
             <Controls:Flyout x:Name="NotificationsFlyout"
-                            AutoCloseInterval="1500"
+                            AutoCloseInterval="3500"
                             IsAutoCloseEnabled="True"
                             CloseButtonVisibility="Visible"
-                            Header="Notifications"
+                            Header="Notification"
                             Position="Bottom"
                             IsOpen="{Binding NotificationsFlyoutOpen}"
             >
-
+                <DockPanel
+                        Margin="10"
+                        SnapsToDevicePixels="True"
+                        Height="150"
+                        LastChildFill="True"
+                    >
+                    <TextBlock
+                        Text="{Binding NotificationText}"
+                        />
+                </DockPanel>
             </Controls:Flyout>
 
         </Controls:FlyoutsControl>
