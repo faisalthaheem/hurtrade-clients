@@ -68,9 +68,6 @@ namespace SharedData.Services
                 }.CreateConnection().CreateModel();
 
                 #region setup
-                _channel.ExchangeDeclare(
-                    System.Configuration.ConfigurationManager.AppSettings["exchangeNameAuth"], 
-                    ExchangeType.Direct, true, false, null);
 
 
                 //create a temporary queue to receive the response on
