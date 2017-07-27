@@ -53,6 +53,7 @@
     <Compile Include="events\CoverAccountsEventArgs.cs" />
     <Compile Include="poco\updates\BackofficeUpdate.cs" />
     <Compile Include="events\BackofficeUpdateEventArgs.cs" />
+    <Compile Include="poco\updates\ConnectionInfo.cs" />
     <Compile Include="poco\updates\CoverAccount.cs" />
     <Compile Include="poco\updates\CoverPosition.cs" />
     <Compile Include="poco\updates\OfficeFloatingStatus.cs" />

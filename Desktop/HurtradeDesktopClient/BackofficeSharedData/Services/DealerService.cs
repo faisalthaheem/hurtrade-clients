@@ -20,6 +20,7 @@ namespace BackofficeSharedData.Services
     public delegate void UpdateReceivedHandler(object sender, ClientUpdateEventArgs e);
     public delegate void OfficePositionsUpdateReceivedHandler(object sender, BackofficeUpdateEventArgs e);
     public delegate void CoverAccountsListReceivedHandler(object sender, CoverAccountsEventArgs e);
+    public delegate void ConnectionsInformationReceivedHandler(List<ConnectionInfo> connections);
 
     public class DealerService
     {
@@ -37,6 +38,7 @@ namespace BackofficeSharedData.Services
         public event OfficePositionsUpdateReceivedHandler OnOfficePositionsUpdateReceived;
         public event CoverAccountsListReceivedHandler OnCoverAccountsListReceived;
         public event NotificationReceivedEventHandler OnNotificationReceived;
+        public event ConnectionsInformationReceivedHandler OnConnectionsInformationReceived;
 
         private Object lockChannel = new Object();
 
@@ -103,6 +105,7 @@ namespace BackofficeSharedData.Services
 
                 consumerQueueName = _channel.QueueDeclare(string.Empty, false, false, true, null).QueueName;
                 _channel.QueueBind(consumerQueueName, officeExchangeName, "todealer");
+                _channel.QueueBind(consumerQueueName, officeExchangeName, "connections");
 
                 var qResponseMsgConsumer = new EventingBasicConsumer(_channel);
                 qResponseMsgConsumer.Received += qResponseMsgConsumer_Received;
@@ -221,6 +224,11 @@ namespace BackofficeSharedData.Services
 
                     OnCoverAccountsListReceived(this, args);
 
+                }
+                else if (messageType.Equals("connections"))
+                {
+                    List<ConnectionInfo> connections = JsonConvert.DeserializeObject<List<ConnectionInfo>>(ASCIIEncoding.UTF8.GetString(body));
+                    OnConnectionsInformationReceived(connections);
                 }
                 else if (messageType.Equals("notification"))
                 {

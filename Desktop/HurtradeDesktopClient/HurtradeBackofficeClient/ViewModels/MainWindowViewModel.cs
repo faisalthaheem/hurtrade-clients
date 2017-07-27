@@ -64,6 +64,9 @@ namespace HurtradeBackofficeClient.ViewModels
         public ObservableCollection<CoverPosition> _coverPositions = new ObservableCollection<CoverPosition>();
         public ListCollectionView OpenCoverTradesCollectionView { get; private set; }
 
+        public ObservableCollection<ConnectionInfo> _connectionInfoCollection = new ObservableCollection<ConnectionInfo>();
+        public ListCollectionView ConnectionInfoCollectionView { get; private set; }
+
         public ObservableCollection<string> _notificationLogsList = new ObservableCollection<string>();
         public ListCollectionView NotificationLogsListCollectionView { get; private set; }
         #endregion
@@ -173,6 +176,7 @@ namespace HurtradeBackofficeClient.ViewModels
             QuoteCollectionView = new ListCollectionView(Quotes);
             FloatingStatusCollectionView = new ListCollectionView(_floatingStatus);
             OpenCoverTradesCollectionView = new ListCollectionView(_coverPositions);
+            ConnectionInfoCollectionView = new ListCollectionView(_connectionInfoCollection);
             NotificationLogsListCollectionView = new ListCollectionView(_notificationLogsList);
             
 
@@ -359,6 +363,7 @@ namespace HurtradeBackofficeClient.ViewModels
             ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
 
             DealerService.GetInstance().OnOfficePositionsUpdateReceived += OnOfficePositionsUpdateReceived;
+            DealerService.GetInstance().OnConnectionsInformationReceived += MainWindowViewModel_OnConnectionsInformationReceived;
             DealerService.GetInstance().OnNotificationReceived += MainWindowViewModel_OnNotificationReceived;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
@@ -393,6 +398,20 @@ namespace HurtradeBackofficeClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnConnectionsInformationReceived(List<ConnectionInfo> connections)
+        {
+            App.Current.Dispatcher.Invoke((Action)delegate
+            {
+                int selIndex = ConnectionInfoCollectionView.CurrentPosition;
+
+                _connectionInfoCollection.Clear();
+                _connectionInfoCollection.AddRange(connections);
+
+                ConnectionInfoCollectionView.MoveCurrentToPosition(selIndex);
+                ConnectionInfoCollectionView.Refresh();
+            });
         }
 
         private void MainWindowViewModel_OnNotificationReceived(string notification)
