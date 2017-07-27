@@ -38,6 +38,8 @@ namespace HurtradeBackofficeClient.ViewModels
         public DelegateCommand<object> RequoteSetPriceCommand { get; private set; }
         public DelegateCommand RequoteSelectedOrders { get; private set; }
 
+        public DelegateCommand DisconnectSelectedUsersCommand { get; private set; }
+
         public DelegateCommand NewCoverPositionCommand { get; private set; }
         public DelegateCommand EditSelectedCoverPositionCommand { get; private set; }
         public DelegateCommand CloseSelectedCoverPositionCommand { get; private set; }
@@ -64,7 +66,7 @@ namespace HurtradeBackofficeClient.ViewModels
         public ObservableCollection<CoverPosition> _coverPositions = new ObservableCollection<CoverPosition>();
         public ListCollectionView OpenCoverTradesCollectionView { get; private set; }
 
-        public ObservableCollection<ConnectionInfo> _connectionInfoCollection = new ObservableCollection<ConnectionInfo>();
+        public ObservableCollection<ActiveConnections> _connectionInfoCollection = new ObservableCollection<ActiveConnections>();
         public ListCollectionView ConnectionInfoCollectionView { get; private set; }
 
         public ObservableCollection<string> _notificationLogsList = new ObservableCollection<string>();
@@ -92,6 +94,7 @@ namespace HurtradeBackofficeClient.ViewModels
         #region locks
         private Object lockQuotes = new Object();
         private Object lockTrades = new Object();
+        private Object lockActiveSessions = new Object();
         #endregion
 
         #region properties
@@ -198,6 +201,8 @@ namespace HurtradeBackofficeClient.ViewModels
             BulkApproveSelectedTradeCommand = new DelegateCommand(ExecuteBulkApproveSelectedTradeCommand);
             BulkRejectSelectedTradeCommand = new DelegateCommand(ExecuteBulkRejectSelectedTradeCommand);
 
+            DisconnectSelectedUsersCommand = new DelegateCommand(ExecuteDisconnectSelectedUsersCommand);
+
             RequoteSetPriceCommand = new DelegateCommand<object>(ExecuteRequoteSetPriceCommand);
             RequoteSelectedOrders = new DelegateCommand(ExecuteRequoteSelectedOrders);
 
@@ -205,6 +210,30 @@ namespace HurtradeBackofficeClient.ViewModels
             WindowLoaded = new DelegateCommand(ExecuteWindowLoaded);
             WindowClosing = new DelegateCommand(ExecuteWindowClosing);
             WindowClosed = new DelegateCommand(ExecuteWindowClosed);
+        }
+
+        private void ExecuteDisconnectSelectedUsersCommand()
+        {
+            ActiveConnections session = null;
+
+            lock (lockActiveSessions)
+            {
+                int selIndex = ConnectionInfoCollectionView.CurrentPosition;
+                
+                if(selIndex >=0 && selIndex< _connectionInfoCollection.Count )
+                {
+                    session = _connectionInfoCollection[selIndex];
+                }
+            }
+
+            if(session != null)
+            {
+                DealerService.GetInstance().disconnectAndLockSession(
+                    session.Username,
+                    session.Connections.Select(x => x.MqName).ToArray()
+                );
+            }
+
         }
 
 
@@ -361,6 +390,7 @@ namespace HurtradeBackofficeClient.ViewModels
         {
             ClientService.GetInstance().OnUpdateReceived += OnUpdateReceived;
             ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
+            ClientService.GetInstance().OnConnectionClosedByServerEventHandler += MainWindowViewModel_OnConnectionClosedByServerEventHandler;
 
             DealerService.GetInstance().OnOfficePositionsUpdateReceived += OnOfficePositionsUpdateReceived;
             DealerService.GetInstance().OnConnectionsInformationReceived += MainWindowViewModel_OnConnectionsInformationReceived;
@@ -400,17 +430,47 @@ namespace HurtradeBackofficeClient.ViewModels
 
         }
 
+        private void MainWindowViewModel_OnConnectionClosedByServerEventHandler()
+        {
+            App.Current.Dispatcher.Invoke((Action)async delegate
+            {
+                await _dialogCoord.ShowMessageAsync(this, "Security", "Session has been terminated by server, please contact customer support.");
+                App.Current.Shutdown();
+            });
+        }
+
         private void MainWindowViewModel_OnConnectionsInformationReceived(List<ConnectionInfo> connections)
         {
             App.Current.Dispatcher.Invoke((Action)delegate
             {
-                int selIndex = ConnectionInfoCollectionView.CurrentPosition;
+                lock (lockActiveSessions)
+                {
+                    int selIndex = ConnectionInfoCollectionView.CurrentPosition;
 
-                _connectionInfoCollection.Clear();
-                _connectionInfoCollection.AddRange(connections);
+                    _connectionInfoCollection.Clear();
+                    
+                    foreach (var connection in connections)
+                    {
+                        ActiveConnections activeConn = new ActiveConnections();
+                        activeConn.Username = connection.Username;
 
-                ConnectionInfoCollectionView.MoveCurrentToPosition(selIndex);
-                ConnectionInfoCollectionView.Refresh();
+                        if (_connectionInfoCollection.Contains(activeConn))
+                        {
+                            activeConn = _connectionInfoCollection.First(x => x.Username == connection.Username);
+                        }
+                        else
+                        {
+                            _connectionInfoCollection.Add(activeConn);
+                        }
+
+                        activeConn.Connections.Add(connection);
+
+
+                    }
+
+                    ConnectionInfoCollectionView.MoveCurrentToPosition(selIndex);
+                    ConnectionInfoCollectionView.Refresh();
+                }
             });
         }
 

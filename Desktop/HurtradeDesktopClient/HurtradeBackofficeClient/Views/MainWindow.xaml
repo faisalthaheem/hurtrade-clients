@@ -444,10 +444,29 @@
                             <ListView.View>
                                 <GridView>
                                     <GridViewColumn Header = "Username" DisplayMemberBinding = "{Binding Username}" Width = "150"/>
-                                    <GridViewColumn Header = "IP Address" DisplayMemberBinding = "{Binding Ipaddress}" Width = "200"/>
-                                    <GridViewColumn Header = "Connected At" DisplayMemberBinding = "{Binding Connectedat}" Width = "200"/>
+                                    <GridViewColumn Header = "connections" Width="500">
+                                        <GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ListView ItemsSource="{Binding Connections}">
+                                                    <ListView.View>
+                                                        <GridView>
+                                                            <GridViewColumn Header = "IP Address" DisplayMemberBinding = "{Binding Ipaddress}" Width = "200"/>
+                                                            <GridViewColumn Header = "Connected At" DisplayMemberBinding = "{Binding Connectedat}" Width = "200"/>
+                                                        </GridView>
+                                                    </ListView.View>
+                                                </ListView>
+                                            </DataTemplate>
+                                        </GridViewColumn.CellTemplate>
+                                    </GridViewColumn>
+                                    
                                 </GridView>
                             </ListView.View>
+
+                            <ListView.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Disconnect selected user(s)" Command="{Binding DisconnectSelectedUsersCommand}"/>
+                                </ContextMenu>
+                            </ListView.ContextMenu>
                         </ListView>
 
                     </TabItem>

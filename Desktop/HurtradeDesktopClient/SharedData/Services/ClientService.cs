@@ -19,12 +19,14 @@ namespace SharedData.Services
     public delegate void AccountStatusEventHandler(object sender, GenericResponseEventArgs e);
     public delegate void CandleStickDataEventHandler(object sender, CandleStickDataEventArgs e);
     public delegate void NotificationReceivedEventHandler(string notification);
+    public delegate void ConnectionClosedByServerEventHandler();
 
     public class ClientService
     {
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger
             (System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        private IConnection _connection = null;
         private IModel _channel = null;
         private static ClientService _instance = null;
         private string clientExchangeName = string.Empty;
@@ -35,6 +37,7 @@ namespace SharedData.Services
         public event AccountStatusEventHandler OnAccountStatusEventReceived;
         public event CandleStickDataEventHandler OnCandleStickDataEventHandler;
         public event NotificationReceivedEventHandler OnNotificationReceived;
+        public event ConnectionClosedByServerEventHandler OnConnectionClosedByServerEventHandler;
 
         private string _username, _password;
 
@@ -83,13 +86,17 @@ namespace SharedData.Services
                 this.responseQueueName = responseQueue;
                 _username = username;
                 _password = password;
-                
-                _channel = new ConnectionFactory() {
+
+                _connection = new ConnectionFactory()
+                {
                     AutomaticRecoveryEnabled = true,
                     HostName = System.Configuration.ConfigurationManager.AppSettings["brokerip"],
                     UserName = username,
                     Password = password
-                }.CreateConnection().CreateModel();
+                }.CreateConnection();
+                _connection.ConnectionShutdown += _connection_ConnectionShutdown;
+
+                _channel = _connection.CreateModel();
 
                 #region setup
                 
@@ -110,7 +117,19 @@ namespace SharedData.Services
 
             return ret;
         }
-        
+
+        private void _connection_ConnectionShutdown(object sender, ShutdownEventArgs e)
+        {
+            if (e.ReplyCode == RabbitMQ.Client.Framing.Constants.ConnectionForced)
+            {
+                log.Info(e.ReplyText);
+
+                if(null != OnConnectionClosedByServerEventHandler)
+                {
+                    OnConnectionClosedByServerEventHandler();
+                }
+            }
+        }
 
         void qResponseMsgConsumer_Received(object sender, BasicDeliverEventArgs e)
         {
@@ -225,7 +244,10 @@ namespace SharedData.Services
                     else if (props.Type != null && props.Type.Equals("notification"))
                     {
                         string payload = ASCIIEncoding.UTF8.GetString(body);
-                        OnNotificationReceived(payload);
+                        if (null != OnNotificationReceived)
+                        {
+                            OnNotificationReceived(payload);
+                        }
                     }
 
 
@@ -240,6 +262,11 @@ namespace SharedData.Services
 
         public void acceptRequote(Guid orderid)
         {
+            if(null == _channel || !_channel.IsOpen)
+            {
+                return;
+            }
+
             IBasicProperties props = _channel.CreateBasicProperties();
             props.UserId = _username;
             props.Type = "requote";
@@ -257,6 +284,11 @@ namespace SharedData.Services
 
         public void requestTrade(TradeRequest request)
         {
+            if (null == _channel || !_channel.IsOpen)
+            {
+                return;
+            }
+
             IBasicProperties props = _channel.CreateBasicProperties();
             props.UserId = _username;
             props.Type = "trade";
@@ -271,6 +303,11 @@ namespace SharedData.Services
 
         public void requestTradeClosure(Guid orderid)
         {
+            if (null == _channel || !_channel.IsOpen)
+            {
+                return;
+            }
+
             IBasicProperties props = _channel.CreateBasicProperties();
             props.UserId = _username;
             props.Type = "tradeClosure";
@@ -289,6 +326,11 @@ namespace SharedData.Services
 
         public void requestCandleStickChartData(string commodity)
         {
+            if (null == _channel || !_channel.IsOpen)
+            {
+                return;
+            }
+
             IBasicProperties props = _channel.CreateBasicProperties();
             props.UserId = _username;
             props.Type = "candlestick";

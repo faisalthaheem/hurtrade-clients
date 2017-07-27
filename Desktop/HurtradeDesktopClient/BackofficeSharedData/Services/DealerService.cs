@@ -404,5 +404,16 @@ namespace BackofficeSharedData.Services
             sendCommand(request, "office");
         }
 
+
+        public void disconnectAndLockSession(string username, string[] mqNames)
+        {
+            GenericRequestResponseDictionary request = new GenericRequestResponseDictionary();
+            request["username"] = username;
+            request["mqName"] = JsonConvert.SerializeObject(mqNames);
+            request["command"] = "lockuser";
+
+            sendCommand(request, "office");
+        }
+
     }
 }

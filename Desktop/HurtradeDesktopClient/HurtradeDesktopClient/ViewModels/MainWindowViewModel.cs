@@ -266,6 +266,7 @@ namespace HurtradeDesktopClient.ViewModels
             ClientService.GetInstance().OnCandleStickDataEventHandler += MainWindowViewModel_OnCandleStickDataEventHandler;
             ClientService.GetInstance().OnOrderUpdateReceived += MainWindowViewModel_OnOrderUpdateReceived;
             ClientService.GetInstance().OnNotificationReceived += MainWindowViewModel_OnNotificationReceived;
+            ClientService.GetInstance().OnConnectionClosedByServerEventHandler += MainWindowViewModel_OnConnectionClosedByServerEventHandler;
 
             AuthService.GetInstance().OnGenericResponseReceived += MainWindow_OnGenericResponseReceived;
 
@@ -298,6 +299,15 @@ namespace HurtradeDesktopClient.ViewModels
                 App.Current.Shutdown();
             }
 
+        }
+
+        private void MainWindowViewModel_OnConnectionClosedByServerEventHandler()
+        {
+            App.Current.Dispatcher.Invoke((Action)async delegate
+            {
+                await _dialogCoord.ShowMessageAsync(this, "Security", "Session has been terminated by server, please contact customer support.");
+                App.Current.Shutdown();
+            });
         }
 
         private void MainWindowViewModel_OnNotificationReceived(string notification)
