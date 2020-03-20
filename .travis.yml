@@ -1,0 +1,6 @@
+language: csharp
+solution: "./Desktop/HurtradeDesktopClient.sln"
+install:
+- travis_retry nuget restore -source "https://www.nuget.org/api/v2" ./Desktop/HurtradeDesktopClient.sln
+script:
+- xbuild ./Desktop/HurtradeDesktopClient.sln
